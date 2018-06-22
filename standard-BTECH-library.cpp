@@ -7,20 +7,27 @@ ostream build_func(function func){
   
   //########## Teachers ########//
   //will calculate your result and show it for you but not give you the answer nor will he calculate simple problems
+  //nasim is equivalent to  " jen: (yotka: (expression))"
   if (func.name == nasim){
     if (func.trivial) os << "puts(\"The answer to \"" << func << "is trivial and left as an exersise;\n";
-    else os << "printf(\"%d," << func << ");\n";
+    if(func.returnsint) os << "printf(\"%d," << func << ");\n";
+    if(func.returnsdouble) os << "printf(\"%f," << func << ");\n";
+    if(func.returnscomplex){
+      
+      os << "double _Complex _____ = "<< func
+         << ";\nprintf(\"= %.2f + %.2f\", creal(_____), cimag(_____));\n";
+    } 
   }
 
   //will always give you the answer in a well meaning way but in a useless format/skipping steps
   if (func.name == yotka){
-    os << "char* " << func._return << " = (*char)" << func;
+    os << "= " << func._return << " = (*char)" << func;
   }
 
 
   //god is there for you and will help with anything you need invalidating the need for both yotka and nasim
   if (func.name == sesha){
-    os << func._return << " = " << func;
+    os << func._return << " = " << func <<";\n";
   }
 
 //wrapper for printf basically
