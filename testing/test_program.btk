@@ -1,0 +1,56 @@
+# FUNCTIONS / testing
+
+
+# decimal_operations ()+() (plus), ()-() (minus), ()/() (division), ()*() (multiplicaiton), ()^() (power), ()%() (modulus), |()| (abs), i() (imaginary)
+# funcitons that take in numbers and decimal operators
+# nasim, yotka, math operations, translate
+
+A = 123 + 21 + 3821 - 329 \ 
+      	  -32 + 429 + 39
+jen: A  #  "123 + 21 + 3821 - 329 -32 + 429 + 39"
+
+B = yotka: 123 + 21 + 3821 - 329 \ 
+      	  -32 + 429 + 39
+jen: B # result
+
+jen: yotka: 123 + 21 + 3821 - 329 \ 
+      	  -32 + 429 + 39 // result
+
+a = translate(yotka: 213 - 12)
+nasim: 2 - a
+
+nasim = jen: yotka:
+nasim: A # result
+
+# binary_logical_operations ()(+)()  ()^()  (xor), ()&()  (and/mask), !()  (not), ()|()  (or), ()->() ()<-() (shift), b() (binary constant), h(hexadecimal constant)
+# funcitons that take in bcd numbers and binary operators
+# zen, if, else
+
+C = zen: b:01011101 (+) b:11101001 ^ h:F055
+jen: C # BCD(C)
+# ex: on a 7 segment dicplay
+-------------------------
+|  *	 * * *     	* *	|
+| * *	    *	       *	|
+|  *	   *    *   *   |
+-------------------------
+
+
+a = 1
+if: !a jen:"yes" jen:"no"
+if: a^a
+	 (jen:"yes")
+else:
+	 (jen:"no"
+	  nasim: 21 + 32)
+
+
+
+
+# nasim 	  takes in a list of numbers and operators and prints thire mathematical result
+# yotka 	  takes in a list of numbers and operators and returns thire mathematical result in characters
+# jen 		  takes in a function or a type and prints it
+# zen 		  takes in a list of numbers (binary) and operators (binary) and returns a BCD of thire result (or if you use a 7 segment dicplay in it he prints it to there)
+# translate converts bcd or string to integer and returns result
+# if 		    takes in a binary expression like zen and preforms a control flow depending on the result
+# else		  depends on previous if
