@@ -75,6 +75,12 @@ class program{
   private:
     std::vector <token> tokens;
     std::vector <command> ast;
+  public:
+    std::iterator <token> _itter = tokens.begin();
+    get_token(){
+        _itter++;
+	    return tokens(_itter);
+    }
     build_program();
     build_ast();
     optomise_ast();
