@@ -1,18 +1,10 @@
+#include "BTECH.h"
 //split vector of tokens created in parser into a tree of statements...
 //stuff like   func_init: name
 //             expression: number, operator, number
 
-class token{
-   	std::string name = "_";
-  public:
-	//pass defenition will be done in parser
-}
-class _operator: token{
-  char _type; //type
-  token left, right;
- public:
-	_operator(char t): _type(t) {}
-	operation(){
+
+_operator::operation(){
 		if (_type == '+')
 			return left.value + right.value;
 		
@@ -34,44 +26,8 @@ class _operator: token{
 	}
 	//pass defenition will be done in parser
 }
-_operator ADD('+'),  SUB('-'), MULT('*'), DIV('/');
 
 
-class number: token(){
-  public:
-  virtual number get_value() const {}
-	//pass defenition will be done in parser
-}
-class complex: number(){
-	std::complex value;
-  public:
-	number(std::complex v):value(v) {};
-	number get_value(ostream& o) const { o << this->value;}
-}
-class integer: number(){
-	int value;
-  public:
-	number(int v): value(v) {};
-	number get_value(ostream& o) const { o << this->value;}
-}
-class floating_point: number(){
-	double value;
-  public:
-	number(double v): value(v) {};
-	number get_value(ostream& o) const { o << this->value;}
-}
-class command(){
-  public:
-	std::vector <token> tokens;
-	std::ostream& operator<<(std::ostream& os, std::vector<tokens>& tok){
-		os << this->name  << " (";
-		for (auto &t: tok){//print everything in the stream
-			os << t;
-		}
-		os << ")\n"
-		return os;
-	}
-}
 // NUM SUB NUM MULT NUM ADD NUM DIV EXPRESSION      //math
 class expression: command{
   public:
