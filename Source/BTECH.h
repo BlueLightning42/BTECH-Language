@@ -22,6 +22,7 @@ class _operator: token{
 class command(){
   public:
 	std::vector <token> tokens;
+	command();
 	std::ostream& operator<<(std::ostream& os, std::vector<tokens>& tok){
 		os << this->name  << " (";
 		for (auto &t: tok){//print everything in the stream
@@ -73,5 +74,9 @@ class floating_point: number(){
 class program{
   private:
     std::vector <token> tokens;
-    program();
+    std::vector <command> ast;
+    build_program();
+    build_ast();
+    optomise_ast();
+    write_asm();
 }
