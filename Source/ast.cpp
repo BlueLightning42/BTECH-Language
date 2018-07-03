@@ -23,13 +23,19 @@ function::function(std::string n) name(n){
 command build_command(){
   command cmd;
   if (tokens[*_itter+1].name_is("=")){
-      cmd =  assignment(get_token);
+      cmd =  assignment(get_token());
   }else if (tokens[*_itter+1].name_is("op")){  // type is instead
       cmd =  expression();
   }else if (tokens[*_itter+1].name_is("{")){
-      cmd =  function_declariation(get_token);
-  }else if(tokens[*_itter+1].name_is(":"){
+      cmd =  function_declariation(get_token());
+  }else if(tokens[*_itter+1].name_is(":")){
       cmd = function(get_token());  // nested function calls
+  }else if(tokens[*_itter+1].name_is("#") ||tokens[*_itter+1].name_is("EOF") ){
+  //skip empty lines and comments
+  __itter++
+  cmd = build_command();
+  }else{
+       std::cout << "Not a valid command";
   }
   return cmd;
 }
@@ -60,8 +66,17 @@ function_declariation(token n){
 
 // NUM SUB NUM MULT NUM ADD NUM DIV EXPRESSION      //math
 class expression: command{
-
+    std::vector <tokens> expr;
+    command(){
+      while(  !(tokens[*_itter].name_is("EOF") || !(tokens[*_itter].name_is("#")){  // peek
+        if ((tokens[*_itter].type_is("number") || (tokens[*_itter].type_is("operator")){
+             expr.push_back(get_token());
+         }
+         expr.push_back(build_command());
+      }
+   }
 }
 class function: command{
-
+    std::string name;
+    function::function(std::string n);
 }
