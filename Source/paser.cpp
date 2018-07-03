@@ -5,6 +5,11 @@ program::program(){
     // parse input into token array
     std::string file;
     for (std::string::iterator c = file.begin(); c++) {
+        if (*c == '#') {  // Stealling comment syntax from python
+            while (!(*c == '\n')) {c++;}  // comment out whole line
+            token commment("#");//could just ignore but set up like this for now incase I want to leave comments in the binary
+                tokens.push_back(comment);
+        }
         if (*c == '"' || *c == '\'') {  // build strings
             c++;
             unsigned dlim_start = *c;
