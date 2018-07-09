@@ -41,7 +41,7 @@ void program::build_program(std::string f){
 		}else  if (file.peek() == '.' || isdigit(file.peek())){
 		// build numbers
 			getline(file, line,' ');
-			if ( line.find('.') != line.end() ){//contains a decimal
+			if ( line.find('.') != std::string::npos){//contains a decimal
 				tokens.push_back(new _double(std::stod(line));	
 			}else{
 				tokens.push_back(new std::stoi(line));
@@ -53,7 +53,7 @@ void program::build_program(std::string f){
 
 		}
 
-	}file.close()
+	}file.close();
 	tokens.push_back(new token("EOF"));
 	std::cout << "Tokenizing sucessfull";
 	build_ast();
