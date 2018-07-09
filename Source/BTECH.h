@@ -1,37 +1,36 @@
 #include <stdio.h>
-#include <tchar.h>
 #include <vector>
 #include <string>
 #include <iostream>
+#include <complex>
+#include <memory>
 
 class token{
-   	std::string name = "_";
-  public:
-	token(string n) name(n) {}
-	token() {}
-}
+ public:
+  std::string name;
+	token(std::string n="Unknown"): name(n) {}//default Unknown
+};
 
 class _operator: token{
   char _type; //type
   token left, right;
  public:
-    _operator(char t): _type(t) {}
-    operation();
-}
+	_operator(char t): token("op"), _type(t) {}
+};
 
-class command(){
+class command{
   public:
-	std::vector <token> tokens;
-	command();
-	std::ostream& operator<<(std::ostream& os, std::vector<tokens>& tok){
+	command() {}
+	/**std::ostream& operator<<(std::vector<token>& tok){
+	std::ostream os;
 		os << this->name  << " (";
 		for (auto &t: tok){//print everything in the stream
 			os << t;
 		}
 		os << ")\n"
 		return os;
-	}
-}
+	}**/
+};
 
 
 
@@ -40,49 +39,49 @@ class command(){
 
 
 // "types"
-class _string: token {
-public:
-    std::string contents;
-    _string(std::string n, std::string c) name(n), contents(c) {}
+class _string: token{
+  public:
+	std::string contents;
+	_string(std::string);
 };
-
-class number: token(){
+/**
+class _number: token{
   public:
-  virtual number get_value() const {}
+	virtual void get_value() const {}
 	//pass defenition will be done in parser
-}
-class complex: number(){
+};
+class _complex: number{
+  public:
 	std::complex value;
+	_complex(std::complex v): value(v) {};
+	void get_value(std::ostream& o) const { o << this->value;}
+};
+class _integer: number{
   public:
-	number(std::complex v):value(v) {};
-	number get_value(ostream& o) const { o << this->value;}
-}
-class integer: number(){
 	int value;
+	_integer(int v): value(v) {};
+	void get_value(std::ostream& o) const { o << this->value;}
+};
+class _floating_point: number{
   public:
-	number(int v): value(v) {};
-	number get_value(ostream& o) const { o << this->value;}
-}
-class floating_point: number(){
 	double value;
-  public:
-	number(double v): value(v) {};
-	number get_value(ostream& o) const { o << this->value;}
-}
-
+	_floating_point(double v): value(v) {};
+	void get_value(std::ostream& o) const { o << this->value;}
+};
+**/
 
 class program{
   private:
-    std::vector <token> tokens;
-    std::vector <command> ast;
+	std::vector<std::unique_ptr<token>> tokens;
+	std::vector <command> ast;
   public:
-    std::iterator <token> _itter = tokens.begin();
-    get_token(){
-        _itter++;
-	    return tokens(_itter);
-    }
-    build_program();
-    build_ast();
-    optomise_ast();
-    write_asm();
-}
+	int _itter = 0; //used to be a std::vector<token>::itterator
+	token get_token(){ //basically pop front...
+		_itter++;
+		return *tokens.at(_itter -1);
+	}
+	void build_program(std::string);
+	void build_ast();
+	void optomise_ast();
+	void write_asm();
+};
