@@ -1,50 +1,60 @@
 #include "BTECH.h"
-token EndOfLine("EOL"), EndOfFile("EOF");
+#include <set>
+#include <fstream>
+#include <iostream>
+
+
 std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!'};
-program::program(){
-    // parse input into token array
-    std::string file;
-    for (std::string::iterator c = file.begin(); c++) {
-        if (*c == '#') {  // Stealling comment syntax from python
-            while (!(*c == '\n')) {c++;}  // comment out whole line
-            token commment("#");//could just ignore but set up like this for now incase I want to leave comments in the binary
-                tokens.push_back(comment);
-        }
-        if (*c == '"' || *c == '\'') {  // build strings
-            c++;
-            unsigned dlim_start = *c;
-            while (!(*c == '"' || *c == '\'') && (*c-1 == '\\')) {c++;}  // escaped quotes
+_string::_string(std::string c): token("string"), contents(c) {}
 
-            _string s(file.substr(dlim_start, c));
-                tokens.push_back(s);
-        }
-        else if (*c == '\n' && *c-1 != '\\') {  // end of commands
-            tokens.push_back(EndOfLine);
-            return;
-        }
-        else if (ops.find(*c) != ops.end()) {  // build operators
-            _operator op(*c);
-        }
-        else  if (*c == '.' || *c == 'i' || isdigit(c*)){  // build numbers
-            unsigned dlim_start = *c;
-            while (!(*c == ' ' || *c == '	' || c* == '\n' || ops.find(*c)) {c++;}  // escaped quotes not space newline or operator
+void program::build_program(std::string f){
+	// parse input into token array
 
-           std::string temp = (file.substr(dlim_start, c);
-                if (temp[0] == 'i'){
-                    tokens.push_back(imaginary(std::stod(temp));
-                }else if (temp.find('.')){
-                    tokens.push_back(_double(std::stod(temp));		   	
-                }else{
-                    tokens.push_back(std::stoi(temp));
-                }
-        }
-        else{  // build everything else
-            unsigned dlim_start = *c;
-            while (!(*c == ' ' || *c == '	' || c* == '\n' || ops.find(*c)) {c++;}
+	std::ifstream file(f.c_str());
+	if(!file){
+		std::cout << "file not found";
+		return;
+	}
+	std::string line;
+	while (!file.eof()){
+		if (file.peek() == '#') {  // Stealing comment syntax from python
+			// comment out whole line
+			file.ignore(10000,'\n');
 
-            token t(file.substr(dlim_start, c));
-            tokens.push_back(t);
-        }
-    tokens.push_back(EndOfFile);
-    }
+		}else if (file.peek() == '"') {  // build strings
+			getline(file, line,'"');
+			tokens.push_back(new _string(line));
+
+		}else if (file.peek() == '\'') {  // build strings
+			getline(file, line,'\'');
+			tokens.push_back(new _string(line));
+
+		}else if (file.peek() == '\\' && file.peek()-1 != '\\') {  // end of commands
+			tokens.push_back(new token("EOL"));
+
+		}else if (ops.find(file.peek()) != ops.end()) {  // build operators
+			tokens.push_back(new _operator(file.get()));
+
+		}else if (file.peek() == 'i' && isdigit(file.peek()+1)) {  // build operators
+			tokens.push_back(new _operator(file.get()));
+
+		}else  if (file.peek() == '.' || isdigit(file.peek())){
+		// build numbers
+			getline(file, line,' ');
+			if ( line.find('.') != line.end() ){//contains a decimal
+				tokens.push_back(new _double(std::stod(line));	
+			}else{
+				tokens.push_back(new std::stoi(line));
+			}
+
+		}else{  // build everything else
+			getline(file, line,' ');
+			tokens.push_back(new token(line));
+
+		}
+
+	}file.close()
+	tokens.push_back(new token("EOF"));
+	std::cout << "Tokenizing sucessfull";
+	build_ast();
 };
