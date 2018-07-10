@@ -5,83 +5,80 @@
 #include <complex>
 #include <memory>
 
-class token{
- public:
-  std::string name;
-	token(std::string n="Unknown"): name(n) {}//default Unknown
-};
+namespace BTECH{
+	class token{  // abstract base class cause why not
+	  public:
+		std::string name;
+		token(std::string s);
+		virtual void print(std::ostream&) const;
+	};
 
-class _operator: token{
-  char _type; //type
-  token left, right;
- public:
-	_operator(char t): token("op"), _type(t) {}
-};
+	class _generic_token: public token{
+	  public:
+		_generic_token(std::string);
+		void print(std::ostream&) const;
+	};
 
-class command{
-  public:
-	command() {}
-	/**std::ostream& operator<<(std::vector<token>& tok){
-	std::ostream os;
-		os << this->name  << " (";
-		for (auto &t: tok){//print everything in the stream
-			os << t;
+	class _operator: public token{
+		char _type; //type of operator
+	  public:
+		_operator(char);
+		void print(std::ostream&) const;
+	};
+
+
+	// "types"
+	class _string: public token{
+	  public:
+		std::string contents;
+		_string(std::string);
+		void print(std::ostream&) const;
+	};
+	
+	template <typename N> 
+	//I haven't ever touched templates why is this so confusing aaa what do I do
+	class _number: public token{ //generic number token that can store any type of number
+		N value;
+	  public:
+	  	_number(N);
+		N get_value();
+		void print(std::ostream&) const;
+	};
+
+	//commands for the ast
+	class command{
+	public:
+		command() {}
+		/**std::ostream& operator<<(std::vector<token>& tok){
+		std::ostream os;
+			os << this->name  << " (";
+			for (auto &t: tok){//print everything in the stream
+				os << t;
+			}
+			os << ")\n"
+			return os;
+		}**/
+	};
+
+
+
+//main program
+	class program{
+	  private:
+		int debug = 1; //debug flag
+		std::vector<token *> tokens;
+		std::vector <command *> ast;
+	  public:
+		int _itter = 0; //used to be a std::vector<token>::itterator
+		token get_token(){ //basically pop front...
+			_itter++;
+			return *tokens.at(_itter -1);
 		}
-		os << ")\n"
-		return os;
-	}**/
-};
+		void build_program(std::string);
+		void build_ast();
+		void optomise_ast();
+		void write_asm();
+	};
 
-
-
-
-
-
-
-// "types"
-class _string: token{
-  public:
-	std::string contents;
-	_string(std::string);
-};
-/**
-class _number: token{
-  public:
-	virtual void get_value() const {}
-	//pass defenition will be done in parser
-};
-class _complex: number{
-  public:
-	std::complex value;
-	_complex(std::complex v): value(v) {};
-	void get_value(std::ostream& o) const { o << this->value;}
-};
-class _integer: number{
-  public:
-	int value;
-	_integer(int v): value(v) {};
-	void get_value(std::ostream& o) const { o << this->value;}
-};
-class _floating_point: number{
-  public:
-	double value;
-	_floating_point(double v): value(v) {};
-	void get_value(std::ostream& o) const { o << this->value;}
-};
-**/
-
-class program{
-  private:
-	std::vector<std::unique_ptr<token>> tokens;
-	std::vector <command> ast;
-  public:
-	int _itter = 0; //used to be a std::vector<token>::itterator
-	token get_token(){ //basically pop front...
-		_itter++;
-		return *tokens.at(_itter -1);
-	}
-	void build_program(std::string);
-	void build_ast();
-	void optomise_ast();
-	void write_asm();
-};
+std::ostream& operator<<(std::ostream&, const BTECH::token&);
+}
