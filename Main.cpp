@@ -1,9 +1,16 @@
 #include "Source/BTECH.h"
- 
-void main(int * argv, char * argc){
-	//parser
-	//ast tree
-	//optomise?
-	//convert to c and call gcc or convert to asm directly and then convert to an exe not sure yet
+
+int main(int argc, char *argv[]) {
+	std::string f;
+	BTECH::program p;
+
+	if(argc > 1){
+		f = argv[1];  // TODO compiler flags later
+	}else{
+		std::cout << "Please enter the name of the program file";
+		std::cin >> f;
+	}
+	p.build_program(f);
+
 	return 0;
 }
