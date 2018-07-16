@@ -17,6 +17,7 @@ namespace BTECH{
 		token(): name("_") {}
 		virtual void print(std::ostream&) const;
 		bool name_is(std::string) const;
+		virtual bool type_is(char) const;
 	};
 
 	class _generic_token: public token{
@@ -30,6 +31,7 @@ namespace BTECH{
 	  public:
 		_operator(char);
 		void print(std::ostream&) const;
+		bool type_is(char) const;
 	};
 
 
@@ -56,13 +58,12 @@ namespace BTECH{
 	// functions are the most important part of this language even though its not functional
 	class command: public token{
 	  public:
-	  	std::vector <token *> body;
+		std::vector <token *> body;
 		command(std::string);
 		virtual void print(std::ostream&) const;
 	};
 	class generic_command: public command{
 	  public:
-	  	std::vector <token *> body;
 		generic_command(std::string);
 		void print(std::ostream&) const;
 	};
@@ -86,7 +87,7 @@ namespace BTECH{
 	  private:
 		int debug = 2; //debug flag
 		std::vector<token *> tokens; //array of tokens
-		std::vector <token *> ast; //converted into an array of commands
+		std::vector<token *> ast; //converted into an array of commands
 	  public:
 		int _itter = 0; //used to be a std::vector<token>::itterator...
 		token get_token(){ //basically pop front...
