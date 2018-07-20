@@ -1,6 +1,12 @@
 #include "BTECH.h"
 using namespace BTECH;
 
+program::~program(){
+	tokens.clear();
+	ast.clear();
+}
+
+
 void token::print(std::ostream& os) const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
 void command::print(std::ostream& os) const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
 
@@ -11,6 +17,9 @@ _operator::_operator(char t): token("op"), _type(t) {}
 //doesn't liking having these in ast file
 command::command(std::string s): token(s) {}
 generic_command::generic_command(std::string s): command(s) {}
+
+
+
 function::function(std::string s): command(s) {}
 expression::expression(): command("expression") {}
 
@@ -45,16 +54,21 @@ void _number::print(std::ostream& os) const{
 }*/
 // etc...
 void function::print(std::ostream& os) const{
-	os <<"func\'" << this->name << ": {";
+	os <<"  func\'" << this->name << ": \t{";
 	if (!this->body.empty()){
-		for(std::vector<token *>::const_iterator i = this->body.begin(); i != this->body.end(); i++){
-			os << **i << " ";
+		for(auto i: body){ //::const_iterator
+			os << *i << " \n";
 		}
 	}
-	os << "}\n";
+	os << "\t}";
 }
 void generic_command::print(std::ostream& os) const{
-	os <<"[" << this->name << /*" (" << this->body <<*/ "]";
+	os << this->name << "(\n";
+	 if (!this->body.empty()){
+		for(auto i: body){ //::const_iterator
+			os <<"\n\t" << *i;
+		}
+	}os << ')';
 }
 void expression::print(std::ostream& os) const{
 	os <<"  [ ";

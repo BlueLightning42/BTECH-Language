@@ -13,13 +13,13 @@ void program::build_ast(){
 	//tokens.clear();//delete token tree;
 	if(debug){
 		std::cout << "\nAst complete";
-	if(debug > 1)
+	}if(debug > 1){
 		std::cout << ".\n->Objects created:\n";
-		for(std::vector<token *>::iterator i = ast.begin(); i != ast.end(); i++){
-			std::cout << **i << "  ";
+		for(auto i: ast){
+			std::cout << *i << "  ";
 		}
 	}std::cout << '.' << std::endl;
-	optomise_ast();
+	run_program();
 }
 //NOTE if I want to be safe and nice I should probably delete all the items in the vector later
 command* program::build_function(){
@@ -50,7 +50,7 @@ bool program::find_bracket(){
 command* program::build_command(){
 	command* cmd;
 	if (tokens[_itter]->name_is("EOF")) 
-		return (command *)(tokens[_itter]);
+		return (command *)(&tokens[_itter]);
 	if (tokens[_itter]->name_is("op")){
 		if(tokens[_itter]->type_is('(')){
 			_itter++;
@@ -64,7 +64,7 @@ command* program::build_command(){
 			_itter++;
 			//cmd =	assignment(get_token());
 		}else if (tokens[_itter+1]->type_is('{')){ //TODO
-			std::cout <<"{";
+			std::cout <<"{ NOT IMPLEMENTED YET";
 			_itter++;
 		//cmd =	function_declariation(get_token());
 		}else if(tokens[_itter+1]->type_is(':')){
@@ -82,71 +82,7 @@ command* program::build_multiline_command(){
 	while(	!find_bracket() && !tokens[_itter]->name_is("EOF") ){	// peek
 		(*cmds).body.push_back((token *)build_command());
 	}
+	//remove weurd EOL's that apear after multilines? TEST DOES THIS BREAK ANYTHING
+	while ((tokens[_itter+1]->name_is("EOL") || tokens[_itter]->name_is("EOL")) && !find_bracket()) _itter++; 
 	return (command *)(cmds);
 }
-//split vector of tokens created in parser into a tree of statements...
-//stuff like	 func_init: name
-//			 expression: number, operator, number
-
-
-
-/*
-function::function(std::string n) name(n){
-	_itter++;	// move global itterator past the ":"
-	if (tokens[_itter+1].name_is(":"){
-		cmd = function(get_token());	// nested functions
-	}else if (tokens[_itter+1].name_is("("){
-		_itter++;
-		cmd = build_multiline_command();
-	}else{
-		cmd = build_command;
-	}
-	// return self; 
-}
-
-// is this...the factory pattern?
-command build_command(){
-	command cmd;
-	if (tokens[*_itter+1].name_is("=")){
-		cmd =	assignment(get_token());
-	}else if (tokens[*_itter+1].name_is("op")){	// type is instead
-		cmd =	expression();
-	}else if (tokens[*_itter+1].name_is("{")){
-		cmd =	function_declariation(get_token());
-	}else if(tokens[*_itter+1].name_is(":")){
-		cmd = function(get_token());	// nested function calls
-	}else if(tokens[*_itter+1].name_is("#") || tokens[*_itter+1].name_is("EOF") ){
-	//skip empty lines and comments
-	__itter++
-	cmd = build_command();
-	}else{
-		 std::cout << "Not a valid command";
-	}
-	return cmd;
-}
-command build_multiline_command(){
-	std::vector <command> cmds;
-	while(	!(tokens[*_itter].name_is(")")){	// peek
-		cmds.push_back(build_command());
-	}
-	return cmds;
-}
-function_declariation(token n){
-	 // make your own function and append to the global function list in the form
-	 /**
-	 custom_func{ (passed arguments-default *arg)
-							 (logic to be preformed on arg)
-							 (any returned variables)
-	 }
-	 **/
-	 // note this is a joke language and creating functions is obtuse/hidden away like this because
-	 // its designed for you to use all the "custom" functions defined in the standard library (like yotka:)
-	 /**psudocode for yotka function would be
-	 yotka{ (expression e)
-				 (a = cast_to_string((eval(e)))
-				 (a)
-	}
-	**/
-
-
-// NUM SUB NUM MULT NUM ADD NUM DIV EXPRESSION		//math

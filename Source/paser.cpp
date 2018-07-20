@@ -77,21 +77,19 @@ void program::build_program(std::string f){
 			tokens.push_back(new _generic_token(line));
 		}
 	}file.close();
-
+	if (tokens.back()->name_is("EOL"))
+		tokens.pop_back();
 	tokens.push_back(new _generic_token("EOF"));
 
 	
 	if(debug){
-		std::cout << "Tokenizing sucessfull.\n";
+		std::cout << "Tokenizing sucessfull";
 	}
 	if(debug > 1){
-		std::cout << "->Tokens generated:\n  ";
-		for(std::vector<token *>::iterator i = tokens.begin(); i != tokens.end(); i++){
-			std::cout << **i << "  "; 
-			// took me ages to figure out I had to double * it to get the value not the pointer
-			// int* b = new int(210);
-			// std::cout << *b << std::endl;
+		std::cout << ".\n->Tokens generated:\n  ";
+		for(auto i: tokens){
+			std::cout << *i << "  "; 
 		}
-	}
+	}std::cout << '.' << std::endl;//flush
 	build_ast();
 };
