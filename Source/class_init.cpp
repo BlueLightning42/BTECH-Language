@@ -2,8 +2,9 @@
 using namespace BTECH;
 
 program::~program(){
+ //doesn't like iterating over every pointer and deleting? //TODO FIX
 	tokens.clear();
-	ast.clear();
+    //delete ast;
 }
 
 
@@ -19,7 +20,7 @@ command::command(std::string s): token(s) {}
 generic_command::generic_command(std::string s): command(s) {}
 
 
-
+scope::scope(std::string s): command(s) {}
 function::function(std::string s): command(s) {}
 expression::expression(): command("expression") {}
 
@@ -62,6 +63,15 @@ void function::print(std::ostream& os) const{
 	}
 	os << "\t}";
 }
+void scope::print(std::ostream& os) const{
+	os <<"  scope'" << this->name << "{ \n";
+	if (!this->body.empty()){
+		for(auto i: body){ //::const_iterator
+			os << *i << " \n";
+		}
+	}
+	os << "\t}";
+}
 void generic_command::print(std::ostream& os) const{
 	os << this->name << "(\n";
 	 if (!this->body.empty()){
@@ -77,3 +87,6 @@ void expression::print(std::ostream& os) const{
 	}
 	os << "] ";
 }
+
+
+

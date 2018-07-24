@@ -1,7 +1,7 @@
 #include "BTECH.h"
 using namespace BTECH;
 
-std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!',':'};
+std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!',':','{','}'};
 //token initializers
 
 
@@ -10,8 +10,13 @@ std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!','
 //first step is the parser will tokenize the file
 void program::build_program(std::string f){
 	// parse input into token array
-
-	std::ifstream file(f.c_str());
+	std::ifstream file;
+	try{
+		file.open(f.c_str());
+	}catch(std::exception e){
+		std::cout << "Error opening file";
+		return;
+	}
 	if(!file){
 		std::cout << "file not found";
 		return;
@@ -33,8 +38,10 @@ void program::build_program(std::string f){
 			tokens.push_back(new _string(line));
 
 		}else if (next_character == '\n' ) {  // end of commands
-			if(tokens.back()->name != "EOL")//ignore multiple newlines
-				tokens.push_back(new _generic_token("EOL"));
+			if(!tokens.empty()){
+				if(tokens.back()->name != "EOL")//ignore multiple newlines
+					tokens.push_back(new _generic_token("EOL"));
+			}
 
 		}else if (next_character == '\\' ) {  // end of commands
 			file.ignore(1);//ignore backslash lines
@@ -83,13 +90,13 @@ void program::build_program(std::string f){
 
 	
 	if(debug){
-		std::cout << "Tokenizing sucessfull";
+		std::cout << "\nTokenizing sucessfull";
 	}
 	if(debug > 1){
 		std::cout << ".\n->Tokens generated:\n  ";
 		for(auto i: tokens){
 			std::cout << *i << "  "; 
 		}
-	}std::cout << '.' << std::endl;//flush
+	}std::cout << '.';
 	build_ast();
 };
