@@ -24,69 +24,17 @@ scope::scope(std::string s): command(s) {}
 function::function(std::string s): command(s) {}
 expression::expression(): command("expression") {}
 
-//_number::_number(N n): token("number"), value(n) {}
-//_number::get_value() const {return value} //getter for numbers
-
 bool token::name_is(std::string s) const{return !s.compare(this->name);}
 bool token::type_is(char c) const{return 0;}
 bool _operator::type_is(char c) const{return (c == this->_type);}
 
-//boilerplate for printing tokens?
-std::ostream& operator<< (std::ostream& os, const token& tok) {
-    tok.print(os); //call print method of derived class
-    return os;
-}
-void _generic_token::print(std::ostream& os) const{
-	os <<'[' << this->name << "] ";
-	if (this->name_is("EOL")){
-		os << std::endl;
-	}
-}
-void _operator::print(std::ostream& os) const{
-	os <<'['<<this->name << "(" << this->_type << ")] ";
-}
-void _string::print(std::ostream& os) const{
-	os <<'['<< this->name << " \"" << this->contents << "\"]";
-}
 
-/*
-void _number::print(std::ostream& os) const{
-	os << this->get_value() << " ";
-}*/
-// etc...
-void function::print(std::ostream& os) const{
-	os <<"  func\'" << this->name << ": \t{";
-	if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
-			os << *i << " \n";
-		}
-	}
-	os << "\t}";
+//template <typename N>
+double _number::get_value(double _) const{
+	//return floating_point ? f_val : i_val;
+	return f_val;
 }
-void scope::print(std::ostream& os) const{
-	os <<"  scope'" << this->name << "{ \n";
-	if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
-			os << *i << " \n";
-		}
-	}
-	os << "\t}";
+long long _number::get_value(long long _) const{
+	return i_val;
 }
-void generic_command::print(std::ostream& os) const{
-	os << this->name << "(\n";
-	 if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
-			os <<"\n\t" << *i;
-		}
-	}os << ')';
-}
-void expression::print(std::ostream& os) const{
-	os <<"  [ ";
-	for(auto i: this->expr){
-		os << *i;
-	}
-	os << "] ";
-}
-
-
 

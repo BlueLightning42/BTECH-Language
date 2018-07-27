@@ -52,20 +52,29 @@ void program::build_program(std::string f){
 		}else if (ops.find(next_character) != ops.end()) {  // build operators (single char)
 			tokens.push_back(new _operator(next_character));
 
-		}else if (next_character == 'i' && isdigit(file.peek())) {  // build operators
+		}else if (next_character == 'i' && isdigit(file.peek())) {  // build imaginary
 			getline(file, line,' ');
 			//tokens.push_back(new _number(line)); //TODO figure out complex later
 
-		}else  if (next_character == '.' || isdigit(next_character)){
+		}else  if (next_character == '.' || 
+				   isdigit(next_character) || 
+				  (next_character == 'i' && isdigit(file.peek()))
+		){
 		// build numbers
 			line = "";
+			bool is_imaginary = false;
+			if (next_character == 'i'){
+				is_imaginary = true;
+				next_character = file.get();
+			}
+
 			while(next_character == '.' || isdigit(next_character)){
 				line += next_character; //file.get() not working?
 				next_character = file.get();
 			}
 			if(next_character != EOF) file.unget();
 			
-			tokens.push_back(new _generic_token(line));
+			tokens.push_back(new _number(line, is_imaginary));
 
 			if (1 == 1){//contains a decimal
 				//tokens.push_back(new _number(std::stod(line)));	

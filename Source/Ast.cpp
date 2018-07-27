@@ -1,21 +1,21 @@
 // file used to turn all the generic tokens into nested objects
+// as its a scripting langauge now the term ast doesn't make as much sense.
+
 #include "BTECH.h"
 
 using namespace BTECH;
 
 void program::build_ast(){
 	_itter = 0; // reause itterator
-	scope _main("main");
 	while(_itter < tokens.size()-1){//keep adding stuff to main unstil we reach EOF
 		_main.body.push_back( build_command() );
 	}
-	ast = (command*)(&_main);
 	//tokens.clear();//delete token tree;
 	if(debug){
 		std::cout << "\nAst complete";
 	}if(debug > 1){
 		std::cout << ".\n->Objects created:\n";
-		std::cout << *ast;
+		std::cout << _main;
 	}std::cout << '.';
 	run_program();
 }
@@ -33,7 +33,7 @@ command* program::build_scope(){
 
 	get_token();//move past {
 
-	while(!tokens[_itter]->name_is("EOF") && !find_bracket('}') ){
+	while(!tokens[_itter]->name_is("EOF") && !op_is('}') ){
 		(*scp).body.push_back(build_command());
 	}
 	get_token();//move past }
@@ -46,14 +46,14 @@ command* program::build_scope(){
 command* program::build_expression(){
 	expression* express = new expression();
 
-	while(!(tokens[_itter]->name_is("EOL") || tokens[_itter]->name_is("EOF") || find_bracket(')') )){
+	while(!(tokens[_itter]->name_is("EOL") || tokens[_itter]->name_is("EOF") || op_is(')') )){
 		express->expr.push_back(tokens[_itter]);//add all tokens into the array
 		_itter++;
 	}_itter++;
 	
 	return (command *)(express);
 }
-bool program::find_bracket(char b){
+bool program::op_is(char b){
 	if (tokens[_itter]->name_is("op")){
 		if(tokens[_itter]->type_is(b))
 			return true;
@@ -91,11 +91,11 @@ command* program::build_command(){
 }
 command* program::build_multiline_command(){
 	generic_command * cmds = new generic_command("multcmd");
-	while(	!find_bracket(')') && !tokens[_itter]->name_is("EOF") ){	// peek
+	while(	!op_is(')') && !tokens[_itter]->name_is("EOF") ){	// peek
 		(*cmds).body.push_back((token *)build_command());
 	}
 	//remove weurd EOL's that apear after multilines? TEST DOES THIS BREAK ANYTHING
-	while ((tokens[_itter+1]->name_is("EOL") || tokens[_itter]->name_is("EOL")) && !find_bracket(')')) _itter++; 
+	while ((tokens[_itter+1]->name_is("EOL") || tokens[_itter]->name_is("EOL")) && !op_is(')')) _itter++; 
 	return (command *)(cmds);
 }
 //split vector of tokens created in parser into a tree of statements...
