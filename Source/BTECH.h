@@ -9,7 +9,18 @@
 #include <fstream>
 #include <complex>
 #include <memory>
+#include <algorithm>
+/*
 
+This Whole project has led me to the understanding that Polymorphism is evil.
+It started off relativly simple but then everything had to become base class pointers to derived objects and to acess alot of the derived methods I had to dynamic cast the base pointers to derived ones...and it quickly decended into a mess
+While the first note I get when I search it up says to use composition instead of inheritance I'm stuck trying to figure out how that would even be implemented.
+at then end of the day I'm shifting stuff from derived classes into an array of attributes in the token class and its more expensive to preform a check to see if an array of attributes contains a certain attribute than it is to declare some methodes virtual and then define them in every derived class?
+all in all the esc model seems to have specific benefits in a game but for this case/a interpeter it doesn't work (well).
+
+only thing I'm sacarficing is readability
+
+*/
 namespace BTECH{
 	//token list will be a vector of pointers to an abstract token class
 	class token{  // abstract base class cause why not
@@ -101,16 +112,19 @@ namespace BTECH{
 	  public:
 		std::vector <token *> body;
 		command(std::string);
+		~command();
 		virtual void print(std::ostream&) const;
 		virtual std::string jen_print() const;
 		virtual void run(command *);
 	};
+	/* merged with expression object
 	class generic_command: public command{
 	  public:
 		generic_command(std::string);
 		void print(std::ostream&) const;
 		std::string jen_print() const;
 	};
+	*/
 	class function: public command{
 	  public:
 		function(std::string);
@@ -121,18 +135,32 @@ namespace BTECH{
 	};
 	class expression: public command{
 	  public:
-		std::vector<token *> expr;
 		expression();
+		expression(std::string);
 		void print(std::ostream&) const;
 		std::string jen_print() const;
-		~expression(){}
+		~expression();
 	};
 	class scope: public command{
 	  public:
 		scope(std::string);
+		std::vector<token *> tokens;
 		void print(std::ostream&) const;
 		std::string jen_print() const;
 		void run(command * result);
+		/*  ~  ~  ~  ~  ~  ~  ~  */
+		int _itter; //used to be a std::vector<token>::itterator...
+		token get_token(){ //basically pop front...
+			_itter++;
+			return *tokens.at(_itter -1);
+		}
+		command* build_function();
+		command* build_command();
+		command* build_scope();
+		command* build_expression();
+		command* build_multiline_command();
+		bool op_is(char);
+		bool build_scope(std::vector<token *>);
 	};
 
 
@@ -142,25 +170,15 @@ namespace BTECH{
 	  private:
 		int debug; //debug flag
 		std::string program_name;
-		std::vector<token *> tokens; //array of tokens
+		std::vector<token*> tokens;
 		scope _main; //main function and everything attached
 	  public:
 		int _itter; //used to be a std::vector<token>::itterator...
-		token get_token(){ //basically pop front...
-			_itter++;
-			return *tokens.at(_itter -1);
-		}
-		program(std::string s, int d=1): debug(d), _itter(0), program_name(s), _main("main"){build_program(s);}
+		program(std::string, int);
 		~program();
-		void build_program(std::string);
-		command* build_function();
-		command* build_command();
-		command* build_scope();
-		command* build_expression();
-		command* build_multiline_command();
-		bool op_is(char);
-		void build_ast();
-		void run_program();
+		bool build_program(std::string);
+
+		bool run_program();
 	};
 
 

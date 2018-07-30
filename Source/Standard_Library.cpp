@@ -16,25 +16,32 @@ void evaluate_binary_expression(expression *);
 void call_function(std::string, std::vector<token*>, command *);
 
 
-void program::run_program(){
-	if(debug) std::cout << "\nRun Program:";
-	else std::cout<<'.';
-	std::cout<< std::endl << std::string(30-program_name.size()/2, '=')
-			 << ' ' << this->program_name << ' '  
-			 << std::string(30-program_name.size()/2 - program_name.size()%2, '=') << std::endl;
+bool program::run_program(){
 	command * result = new function("test");
     this->_main.run(result);
-	
-	std::cout << std::endl << std::string(62, '=');
 
     if (result->name_is("ERROR"))
-        std::cout << "Error Running Program";
+        return 1;
     delete result;
+	return 0;
+}
+
+
+
+void _if(std::vector<token*> params){
+	expression e = *(dynamic_cast<expression *>(params.at(0))); //copy expression object
+	evaluate_binary_expression(&e);
+	if (e.body.at(0) == 0){
+		dynamic_cast<command *>(params.at(1))->run(new command("NOP"));
+	}else{
+		dynamic_cast<command *>(params.at(2))->run(new command("NOP"));
+	}
 }
 
 
 
 
+// teacher functions
 void yotka(std::vector<token*> params){
 	for(auto p: params){
 		if(p->name_is("expression")){
@@ -49,10 +56,10 @@ void nasim(std::vector<token*> params){
 		if(p->name_is("expression")){
 			expression e = *(dynamic_cast<expression *>(p)); //copy expression object
 			evaluate_numeric_expression(&e);//evaluate and collapse expresison object
-			if (e.expr.size() > 1) break;
-			if (e.expr.at(0)->name_is("num")){
+			if (e.body.size() > 1) break;
+			if (e.body.at(0)->name_is("num")){
 				params.clear();
-				params.push_back(e.expr.at(0));
+				params.push_back(e.body.at(0));
 				return;
 			}
 		}
@@ -66,16 +73,14 @@ void zen(std::vector<token*> params){
 		if(p->name_is("expression")){
 			expression e = *(dynamic_cast<expression *>(p)); //copy expression object
 			evaluate_binary_expression(&e);//evaluate and collapse expresison object
-			if (e.expr.at(0)->name_is("num")){
+			if (e.body.at(0)->name_is("num")){
 				params.clear();
-				params.push_back(e.expr.at(0));
+				params.push_back(e.body.at(0));
 				return;
 			}
 		}
 	}
 }
-
-
 
 //jen should never fail no matter what is passed to her
 void jen(std::vector<token*> params){
@@ -112,5 +117,7 @@ void call_function(std::string name, std::vector<token*> params, command * resul
 		jen(params);
 	}else if(name == "nasim"){
 		nasim(params);
+	}else if(name == "if"){
+		_if(params);
 	}
 }

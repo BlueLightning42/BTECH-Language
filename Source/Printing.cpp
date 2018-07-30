@@ -43,20 +43,21 @@ void scope::print(std::ostream& os) const{
 	}
 	os << "\t}";
 }
-void generic_command::print(std::ostream& os) const{
-	os << this->name << "(\n";
-	 if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
-			os <<"\n\t" << *i;
-		}
-	}os << ')';
-}
 void expression::print(std::ostream& os) const{
-	os <<"  [ ";
-	for(auto i: this->expr){
-		os << *i;
+	if (this->name_is("multcmd")){
+		os << this->name << "(\n";
+		if (!this->body.empty()){
+			for(auto i: body){ //::const_iterator
+				os <<"\n\t" << *i;
+			}
+		}os << ')';
+	}else{
+		os <<"  [ ";
+		for(auto i: this->body){
+			os << *i;
+		}
+		os << "] ";
 	}
-	os << "] ";
 }
 
 
@@ -91,15 +92,6 @@ std::string function::jen_print() const{
 		return this->name + ' ';
 	}	
 }
-std::string generic_command::jen_print() const{
-	std::string temp;
-	 if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
-			temp += i->jen_print();
-		}
-	}
-	return temp;
-}
 std::string scope::jen_print() const{
 	std::string temp;
 	 if (!this->body.empty()){
@@ -111,7 +103,7 @@ std::string scope::jen_print() const{
 }
 std::string expression::jen_print() const{
 	std::string temp = "";
-	for(auto i: this->expr){
+	for(auto i: this->body){
 		temp += i->jen_print();
 	}
 	return temp;

@@ -4,27 +4,34 @@ using namespace BTECH;
 std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!',':','{','}'};
 //token initializers
 
-
+//global token pointers that will not be deleted.
+_generic_token * _EOL_ = new _generic_token("EOL");
+_generic_token * _EOF_ = new _generic_token("EOF");
 
 
 //first step is the parser will tokenize the file
-void program::build_program(std::string f){
+bool program::build_program(std::string f){
 	// parse input into token array
 	std::ifstream file;
 	try{
 		file.open(f.c_str());
 	}catch(std::exception e){
 		std::cout << "Error opening file";
-		return;
+		return 1;
 	}
 	if(!file){
-		std::cout << "file not found";
-		return;
+		std::cout << "File not found";
+		return 1;
+	}
+	if(file.peek() == std::ifstream::traits_type::eof()){
+		std::cout << "File is empty!";
+		return 1;
 	}
 	std::string line;
 	char next_character;
 	while (!file.eof()){
 		next_character = file.get();
+		if(next_character == EOF) break;
 		if (next_character == '#') {  // Stealing comment syntax from python
 			// comment out whole line
 			file.ignore(10000,'\n');
@@ -40,7 +47,7 @@ void program::build_program(std::string f){
 		}else if (next_character == '\n' ) {  // end of commands
 			if(!tokens.empty()){
 				if(tokens.back()->name != "EOL")//ignore multiple newlines
-					tokens.push_back(new _generic_token("EOL"));
+					tokens.push_back(_EOL_);
 			}
 
 		}else if (next_character == '\\' ) {  // end of commands
@@ -93,19 +100,13 @@ void program::build_program(std::string f){
 			tokens.push_back(new _generic_token(line));
 		}
 	}file.close();
+	if (tokens.size() < 1){
+		std::cout << "File is Empty!";
+		return 1;
+	}
 	if (tokens.back()->name_is("EOL"))
 		tokens.pop_back();
-	tokens.push_back(new _generic_token("EOF"));
+	tokens.push_back(_EOF_);
 
-	
-	if(debug){
-		std::cout << "\nTokenizing sucessfull";
-	}
-	if(debug > 1){
-		std::cout << ".\n->Tokens generated:\n  ";
-		for(auto i: tokens){
-			std::cout << *i << "  "; 
-		}
-	}std::cout << '.';
-	build_ast();
+	return 0;
 };
