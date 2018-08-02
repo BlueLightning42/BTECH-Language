@@ -22,6 +22,12 @@ only thing I'm sacarficing is readability
 
 */
 namespace BTECH{
+	template <typename T>
+	void delete_pointed_to(T* const ptr){
+		if (!(ptr->name_is("EOL") || ptr->name_is("EOF"))){
+			delete ptr;
+		}
+	}
 	//token list will be a vector of pointers to an abstract token class
 	class token{  // abstract base class cause why not
 	  public:
@@ -65,41 +71,26 @@ namespace BTECH{
 
 
 	class _number: public token{ //generic number token that can store any type of number
+	  private:
 		double f_val;
 		long long i_val;
-		// std::complex<double> c_val; WILL IMPLEMENT ONCE FLOATS AND DOUBLES WORK
-		// dont be too ambitious for joke language unstil it works
-	  public:
+		std::complex<double> c_val;
+	  public: 
+	  //used to be private
+
 		bool floating_point;
-		_number (double d){
-			f_val = d;
-			i_val = static_cast<long long>(d);
-			floating_point = ((f_val - i_val) > 0.0000001);
-			
-		}
-		_number (long long i){
-			i_val = i;
-			f_val = static_cast<double>(i);
-			floating_point = false;
-		}
-		_number (int i){
-			i_val = i;
-			f_val = static_cast<double>(i);
-			floating_point = false;
-		}
-	  	_number(std::string n, bool imaginary): token("num") {
-			if (imaginary) {
-				//make complex
-			}else{
-				i_val = stoll(n);
-				f_val = stod(n);
-				floating_point = ((f_val - i_val) > 0.0000001);
-			}
-		}
-		//template <typename N>
+		bool imaginary;
+	  	_number(std::string, bool);
+
+		void remake(std::complex<double>);
+		void remake(double);
+		void remake(long long);
+
 		double get_value(double) const;
 		long long get_value(long long) const;
-		
+		std::complex<double> get_value_i() const;
+
+
 		virtual std::string jen_print() const;
 		void print(std::ostream&) const;
 		~_number() {}
@@ -117,14 +108,6 @@ namespace BTECH{
 		virtual std::string jen_print() const;
 		virtual void run(command *);
 	};
-	/* merged with expression object
-	class generic_command: public command{
-	  public:
-		generic_command(std::string);
-		void print(std::ostream&) const;
-		std::string jen_print() const;
-	};
-	*/
 	class function: public command{
 	  public:
 		function(std::string);
@@ -144,6 +127,7 @@ namespace BTECH{
 	class scope: public command{
 	  public:
 		scope(std::string);
+		~scope();
 		std::vector<token *> tokens;
 		void print(std::ostream&) const;
 		std::string jen_print() const;
@@ -159,8 +143,9 @@ namespace BTECH{
 		command* build_scope();
 		command* build_expression();
 		command* build_multiline_command();
-		bool op_is(char);
+		bool add_to_scope(std::vector<token *>);
 		bool build_scope(std::vector<token *>);
+		bool op_is(char);
 	};
 
 
@@ -175,9 +160,10 @@ namespace BTECH{
 	  public:
 		int _itter; //used to be a std::vector<token>::itterator...
 		program(std::string, int);
+		program();//shell
 		~program();
 		bool build_program(std::string);
-
+		std::vector<token*> parse_line();
 		bool run_program();
 	};
 

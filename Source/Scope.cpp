@@ -1,5 +1,4 @@
 // file used to turn all the generic tokens into nested objects
-// as its a scripting langauge now the term ast doesn't make as much sense.
 
 #include "BTECH.h"
 
@@ -11,6 +10,15 @@ bool scope::build_scope(std::vector<token *> tok){
 		this->body.push_back( build_command() );
 	}
 	return 0;
+}
+bool scope::add_to_scope(std::vector<token *> tok){
+	tokens.reserve(tokens.size() + tok.size());
+	std::move(tok.begin(), tok.end(), std::inserter(tokens, tokens.end()));
+
+	while(_itter < tokens.size()-1){//parse the newest line
+		this->body.push_back( build_command() );
+	}
+	return 1;
 }
 //NOTE if I want to be safe and nice I should probably delete all the items in the vector later
 command* scope::build_function(){
@@ -40,7 +48,12 @@ command* scope::build_expression(){
 	expression* express = new expression();
 
 	while(!(tokens[_itter]->name_is("EOL") || tokens[_itter]->name_is("EOF") || op_is(')') )){
-		express->body.push_back(tokens[_itter]);//add all tokens into the array
+		if (op_is('(')){
+			_itter++;
+			express->body.push_back(build_expression());//add all tokens into the array
+		}else{
+			express->body.push_back(tokens[_itter]);//add all tokens into the array
+		}
 		_itter++;
 	}_itter++;
 	

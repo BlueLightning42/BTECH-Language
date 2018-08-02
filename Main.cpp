@@ -26,11 +26,11 @@ int main(int argc, char *argv[]) {
 	}else{
 		std::cout << "Please enter the name of the script file\n"
 				<<"followed by any flags (type flags to list all optional flags)\n"
-				<<" OR type btech to enter the (semi) shell OR type q to quit.\n~>";
+				<<" OR type btech (or shell) to enter the (semi) shell OR type q to quit.\n~>";
 		while(getline(std::cin, line)){
-			if(!line.compare("btech")){
-				//p.shell;
-				std::cout << "not implemented yet";
+			if(!line.compare("btech") || !line.compare("shell")){
+				p = new BTECH::program();
+				delete p;
 			}else if(!line.compare("flags")){
 				std::cout << "debugging flags:\n  -d0 nothing\n  -d1 (default) informative\n  -d2 verbose.\n~>";
 			}else if(!line.compare("q")){
@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
 				delete p;
 				std::cout << "\n\nFeel free to run another script or type q to quit...\n~>";
 				d=1;
-
 			}
 		}
 	}

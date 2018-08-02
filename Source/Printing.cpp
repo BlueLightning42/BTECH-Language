@@ -22,8 +22,12 @@ void _string::print(std::ostream& os) const{
 void _number::print(std::ostream& os) const{
 	double d;
 	long long l;
-	if (this->floating_point) {os <<"[num(" << this->get_value(d) << ")] ";}
-	else {os <<"[num(" << this->get_value(l) << ")] ";}
+	if (this->imaginary){
+		os << "[inum( "<<this->c_val.real() << ", " << c_val.imag() << "i )] ";
+	}else{
+		if (this->floating_point) {os <<"[num(" << this->f_val << ")] ";}
+		else 					  {os <<"[num(" << this->i_val << ")] ";}
+	}
 }
 void function::print(std::ostream& os) const{
 	os <<"  func\'" << this->name << ": \t{";
@@ -76,11 +80,30 @@ std::string _operator::jen_print() const{
 std::string _string::jen_print() const{
 	return this->contents;
 }
+
+inline std::string clip_zero(std::string str){
+	str.erase ( str.find_last_not_of('0') + 1, std::string::npos );
+	str.erase ( str.find_last_not_of('.') + 1, std::string::npos );
+	return str;
+}
+inline bool close_to_int(double f){
+	return !( f > -0.0000002 && f < 0.0000002);
+}
 std::string _number::jen_print() const{
-	if (this->floating_point){
-		return  std::to_string(this->f_val);
+	if(this->imaginary){
+		return (close_to_int(c_val.real()) ? 
+					clip_zero(std::to_string(this->c_val.real())) + " " 
+					: "") +
+				(c_val.imag() > 0 ? 
+					close_to_int(c_val.real()) ? "+ " : "" 
+					: "- ") + 
+				clip_zero(std::to_string(std::abs(this->c_val.imag()))) + "j";
 	}else{
-		return  std::to_string(this->i_val);
+		if (this->floating_point){
+			return clip_zero(std::to_string(this->f_val));
+		}else{
+			return std::to_string(this->i_val);
+		}
 	}
 }
 std::string function::jen_print() const{
@@ -104,7 +127,7 @@ std::string scope::jen_print() const{
 std::string expression::jen_print() const{
 	std::string temp = "";
 	for(auto i: this->body){
-		temp += i->jen_print();
+		temp += i->jen_print() + " ";
 	}
 	return temp;
 }
