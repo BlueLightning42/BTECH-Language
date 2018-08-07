@@ -131,3 +131,91 @@ std::string expression::jen_print() const{
 	}
 	return temp;
 }
+
+
+
+
+
+//================= Zen =====================//
+/*    Zen printing uses 7 segment displays   */
+
+/*	top	
+	top left	
+	top right	
+	center		
+	bottom left	
+	bottom right
+	bottom
+	point
+*/
+const int EMPTY = 10;
+const int POINT = 11;
+const unsigned char screen[12] ={
+	0b11101110, // 0
+	0b00100100, // 1
+	0b10111010, // 2
+	0b10110110, // 3
+	0b01110100, // 4
+	0b11010110, // 5
+	0b11011110, // 6
+	0b11100100, // 7
+	0b11111110, // 8
+	0b11110110, // 9
+	0b00000000, // null/empty
+	0b00000001  // point
+};
+inline void append_number_to_7SD(std::vector<std::string> &s, unsigned char c){
+	s[0].insert(8,"  " +std::string((c >> 7 & 1)? ".____." : ".    .")										+ "  ");
+	s[1].insert(8,"  " +std::string((c >> 6 & 1)? "|" : " ") + "    " + std::string((c >> 5 & 1)? "|" : " ")	+ "  ");
+	s[2].insert(8,"  " +std::string((c >> 6 & 1)? "|" : " ") + "    " + std::string((c >> 5 & 1)? "|" : " ")	+ "  ");
+	s[3].insert(8,"  " +std::string((c >> 4 & 1)? ".____." : ".    .")										+ "  ");
+	s[4].insert(8,"  " +std::string((c >> 3 & 1)? "|" : " ") + "    " + std::string((c >> 2 & 1)? "|" : " ")	+ "  ");
+	s[5].insert(8,"  " +std::string((c >> 3 & 1)? "|" : " ") + "    " + std::string((c >> 2 & 1)? "|" : " ")	+ "  ");
+	s[6].insert(8,"  " +std::string((c >> 1 & 1)? ".____." : ".    .") + std::string((c >> 0 & 1)? "o" : " ") + " " );
+}
+inline int i_pow(int a, int b){
+	if (b==0) return 1;
+	while(b > 1){
+		a *= a;
+		b--;
+	}
+	return a;
+}
+void print_7SD(int num){
+	std::vector<std::string> s = {"    \n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n||   ||_"};
+	int tn=num;
+	do{
+		append_number_to_7SD(s, screen[tn % 10]);
+		tn /= 10;
+	}while(tn);
+	std::cout << "\n================";
+	if(num / 100) std::cout << "==========";
+	if(num/10) std::cout << "===========";
+	for(auto a: s){
+		std::cout << a;
+	}
+	if(num / 100 > 0){ std::cout << "\n===================================||3|\n";
+	}else if(num/10 > 0) {std::cout << "\n=========================||2|\n";
+	}else{std::cout << "\n===============||1|\n";}
+}
+void print_7SD(float num){
+	std::vector<std::string> s = {"    \n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n||   ||_"};
+	int tn=num;
+	int places = 0;
+	while(tn){
+		places++;
+		tn /=10;
+	}
+	int rest = (num-tn) * (10 * (3-places));
+	do{
+		append_number_to_7SD(s, screen[tn % 10] & (tn/=10 ? EMPTY : POINT ));
+		tn /= 10;
+	}while(tn);
+
+	std::cout << "\n=====================================";
+	for(auto a: s){
+		std::cout << a;
+	}
+	std::cout << "\n===================================||3|\n";
+
+}
