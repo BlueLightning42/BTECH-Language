@@ -1,22 +1,7 @@
 #include "BTECH.h"
 using namespace BTECH;
 
-program::~program(){
-	std::for_each(tokens.begin(), tokens.end(), delete_pointed_to<token>);
-	tokens.clear();
-}
-command::~command(){
-	std::for_each(body.begin(), body.end(), delete_pointed_to<token>);
-	body.clear();
-}
-scope::~scope(){
-	std::for_each(tokens.begin(), tokens.end(), delete_pointed_to<token>);
-	tokens.clear();
-}
-expression::~expression(){
-	std::for_each(body.begin(), body.end(), delete_pointed_to<token>);
-	body.clear();
-}
+
 
 
 void token::print(std::ostream& os) const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
@@ -50,7 +35,7 @@ std::complex<double> _number::get_value_i() const{
 	return c_val;
 }
 
-void  _number::remake(std::complex<double> n) {
+_number::_number(std::complex<double> n) {
 	this->imaginary = true;
 	this->c_val = n;
 	this->i_val = static_cast<long long>(c_val.real()+0.5);
@@ -60,7 +45,7 @@ void  _number::remake(std::complex<double> n) {
 		this->floating_point = !( (f_val - i_val) > -0.0000002 && (f_val - i_val) < 0.0000002);
 	} 
 }
-void  _number::remake(double n) {
+_number::_number(double n) {
 	this->imaginary = false;
 	this->c_val.imag(0);
 	this->i_val = static_cast<long long>(n+0.5);
@@ -68,7 +53,7 @@ void  _number::remake(double n) {
 	this->c_val.real(f_val);
 	this->floating_point = !( (f_val - i_val) > -0.0000002 && (f_val - i_val) < 0.0000002);
 }
-void  _number::remake(long long n) {
+_number::_number(long long n) {
 	this->imaginary = false;
 	this->c_val.imag(0);
 	this->i_val = n;
@@ -110,7 +95,7 @@ program::program(std::string s, int d=1):
 	}
 	if(debug > 1){
 std::cout << ".\n->===================== Tokens generated: ====================\n  ";
-		for(auto i: tokens){
+		for(const auto &i: tokens){
 			std::cout << *i << "  "; 
 		}
 	}std::cout << '.';

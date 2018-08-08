@@ -32,7 +32,7 @@ void _number::print(std::ostream& os) const{
 void function::print(std::ostream& os) const{
 	os <<"  func\'" << this->name << ": \t{";
 	if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
+		for(const auto &i: body){ //::const_iterator
 			os << *i << " \n";
 		}
 	}
@@ -41,7 +41,7 @@ void function::print(std::ostream& os) const{
 void scope::print(std::ostream& os) const{
 	os <<"  scope'" << this->name << "{ \n";
 	if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
+		for(const auto &i: body){ //::const_iterator
 			os << *i << " \n";
 		}
 	}
@@ -51,13 +51,13 @@ void expression::print(std::ostream& os) const{
 	if (this->name_is("multcmd")){
 		os << this->name << "(\n";
 		if (!this->body.empty()){
-			for(auto i: body){ //::const_iterator
+			for(const auto &i: body){ //::const_iterator
 				os <<"\n\t" << *i;
 			}
 		}os << ')';
 	}else{
 		os <<"  [ ";
-		for(auto i: this->body){
+		for(const auto &i: this->body){
 			os << *i;
 		}
 		os << "] ";

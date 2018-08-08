@@ -1,13 +1,11 @@
 #include "BTECH.h"
 using namespace BTECH;
 
+// c++14 feature added to c++11 in a hack :3
+
+
 std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!',':','{','}'};
 //token initializers
-
-//global token pointers that will not be deleted.
-_generic_token * _EOL_ = new _generic_token("EOL");
-_generic_token * _EOF_ = new _generic_token("EOF");
-
 
 //first step is the parser will tokenize the file
 bool program::build_program(std::string f){
@@ -44,16 +42,16 @@ bool program::build_program(std::string f){
 
 		}else if (next_character == '"') {  // build strings "
 			getline(file, line,'"');
-			tokens.push_back(new _string(line));
+			tokens.push_back(BTECH::make_unique<_string>(line));
 
 		}else if (next_character == '\'') {  // build strings '
 			getline(file, line,'\'');
-			tokens.push_back(new _string(line));
+			tokens.push_back(BTECH::make_unique<_string>(line));
 
 		}else if (next_character == '\n' ) {  // end of commands
 			if(!tokens.empty()){
-				if(tokens.back()->name != "EOL")//ignore multiple newlines
-					tokens.push_back(_EOL_);
+				if(tokens.back()->name != "EOL")//ignore multiple std::vector<std::unique_ptr<token> > (newlines
+					tokens.push_back(BTECH::make_unique<_generic_token>("EOL"));
 			}
 
 		}else if (next_character == '\\' ) {  // end of commands
@@ -63,7 +61,7 @@ bool program::build_program(std::string f){
 			continue;
 
 		}else if (ops.find(next_character) != ops.end()) {  // build operators (single char)
-			tokens.push_back(new _operator(next_character));
+			tokens.push_back(BTECH::make_unique<_operator>(next_character));
 
 		}else  if (next_character == '.' || 
 				   isdigit(next_character) || 
@@ -87,7 +85,7 @@ bool program::build_program(std::string f){
 			}
 			if(next_character != EOF) file.unget();
 
-			tokens.push_back(new _number(line, is_imaginary));
+			tokens.push_back(BTECH::make_unique<_number>(line, is_imaginary));
 
 		}else{  // build everything else
 			line = "";
@@ -97,7 +95,7 @@ bool program::build_program(std::string f){
 			}
 			if(next_character != EOF) file.unget();
 			
-			tokens.push_back(new _generic_token(line));
+			tokens.push_back(BTECH::make_unique<_generic_token>(line));
 		}
 	}file.close();
 	if (tokens.size() < 1){
@@ -106,14 +104,14 @@ bool program::build_program(std::string f){
 	}
 	if (tokens.back()->name_is("EOL"))
 		tokens.pop_back();
-	tokens.push_back(_EOF_);
+	tokens.push_back(BTECH::make_unique<_generic_token>("EOF"));
 
 	return 0;
 };
 
 
 // Alot of overlap but it would complicate reading it even more if I tried to combine them (from file and from console) into one function that uses either cin or ifstream...or seperate parts of it into even more functions.
-std::vector<token*> program::parse_line(){
+std::vector<std::unique_ptr<token> > program::parse_line(){
 	std::cout << "->";
 	char next_character;
 	bool not_escaped = true;
@@ -130,7 +128,7 @@ std::vector<token*> program::parse_line(){
 				
 				std::cin.get(next_character);
 			}
-			tokens.push_back(new _string(line));
+			tokens.push_back(BTECH::make_unique<_string>(line));
 			continue;
 		}
 		if (next_character == '\\') not_escaped = false;
@@ -152,7 +150,7 @@ std::vector<token*> program::parse_line(){
 				debug = 0;
 				std::cout << " debugging OFF";
 			}else if (line == "end" || line == "quit" || line == "q") {
-				tokens.push_back(_EOF_);
+				tokens.push_back(BTECH::make_unique<_generic_token>("EOF"));
 			}else if (line == "tree"){
 				std::cout << _main;
 			}else{
@@ -161,7 +159,7 @@ std::vector<token*> program::parse_line(){
 			std::cout << std::endl;
 		}
 		if (ops.find(next_character) != ops.end()) {  // build operators (single char)
-			tokens.push_back(new _operator(next_character));
+			tokens.push_back(BTECH::make_unique<_operator>(next_character));
 			continue;			
 		}
 
@@ -186,13 +184,13 @@ std::vector<token*> program::parse_line(){
 				next_character = std::cin.get();
 			}
 			if (next_character == '\n') std::cin.unget();
-			tokens.push_back(new _number(line, is_imaginary));
+			tokens.push_back(BTECH::make_unique<_number>(line, is_imaginary));
 
 		}
 	}
-	tokens.push_back(_EOL_);
+	tokens.push_back(BTECH::make_unique<_generic_token>("EOL"));
 	if(debug){
-		for (auto tok: tokens){
+		for (const auto &tok: tokens){
 			std::cout << *tok;
 		}std::cout << std::endl;
 	}
