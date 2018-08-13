@@ -29,8 +29,8 @@ namespace BTECH{
 		}
 	}*/
 	template<typename T, typename... Args>
-		std::unique_ptr<T> make_unique(Args&&... args) {
-    	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+	inline std::unique_ptr<T> make_unique(Args&&... args) {
+		return (std::unique_ptr<T>(new T(std::forward<Args>(args)...)));
 	}
 	//token list will be a vector of pointers to an abstract token class
 	class token{  // abstract base class cause why not
@@ -42,7 +42,7 @@ namespace BTECH{
 		virtual std::string jen_print() const;
 		bool name_is(std::string) const;
 		virtual bool type_is(char) const;
-		~token()  = default; 
+		~token(); //removes a load of errors for not having a default deconstructor and for some reason they can't be in the header file
 	};
 
 	class _generic_token: public token{
@@ -50,6 +50,7 @@ namespace BTECH{
 		_generic_token(std::string);
 		void print(std::ostream&) const;
 		std::string jen_print() const;
+		~_generic_token(); 
 	};
 
 	class _operator: public token{
@@ -59,6 +60,7 @@ namespace BTECH{
 		void print(std::ostream&) const;
 		std::string jen_print() const;
 		bool type_is(char) const;
+		~_operator();
 		
 	};
 
@@ -70,6 +72,7 @@ namespace BTECH{
 		_string(std::string);
 		void print(std::ostream&) const;
 		std::string jen_print() const;
+		~_string(); 
 	};
 	
 
@@ -97,7 +100,8 @@ namespace BTECH{
 
 		virtual std::string jen_print() const;
 		void print(std::ostream&) const;
-		
+
+		~_number(); 
 	};
 
 
@@ -105,36 +109,39 @@ namespace BTECH{
 	// functions are the most important part of this language even though its not functional
 	class command: public token{
 	  public:
-		std::vector<std::shared_ptr<command> > body;
 		command(std::string);
-		
 		virtual void print(std::ostream&) const;
 		virtual std::string jen_print() const;
-		virtual void run(command *);
+		virtual void run(std::shared_ptr<token>);
+		~command();
 	};
 	class function: public command{
 	  public:
 		function(std::string);
 		function(std::string, std::vector<std::shared_ptr<command> >);
+		std::shared_ptr<command> body;
 		void print(std::ostream&) const;
 		std::string jen_print() const;
-		void run(command * result);
+		void run(std::shared_ptr<token>);
+		~function(); 
 	};
 	class expression: public command{
 	  public:
 		expression();
 		expression(std::string);
+		std::vector<std::shared_ptr<token> > body;
 		void print(std::ostream&) const;
 		std::string jen_print() const;
-		
+		~expression(); 
 	};
 	class scope: public command{
 	  public:
 		scope(std::string);
 		std::vector<std::unique_ptr<token> > tokens;
+		std::vector<std::shared_ptr<command> > body;
 		void print(std::ostream&) const;
 		std::string jen_print() const;
-		void run(std::vector<std::shared_ptr<command> > result);
+		void run(std::shared_ptr<token>);
 		/*  ~  ~  ~  ~  ~  ~  ~  */
 		int _itter; //used to be a std::vector<token>::itterator...
 		token get_token(){ //basically pop front...
@@ -146,9 +153,10 @@ namespace BTECH{
 		std::shared_ptr<command> build_scope();
 		std::shared_ptr<command> build_expression();
 		std::shared_ptr<command> build_multiline_command();
-		bool add_to_scope(std::vector<std::unique_ptr<token> >);
-		bool build_scope(std::vector<std::unique_ptr<token> >);
+		bool add_to_scope(std::vector<std::unique_ptr<token> >&);
+		bool build_scope( std::vector<std::unique_ptr<token> >&);
 		bool op_is(char);
+		~scope(); 
 	};
 
 
@@ -166,7 +174,7 @@ namespace BTECH{
 		program();//shell
 		~program();
 		bool build_program(std::string);
-		std::vector<std::unique_ptr<token> > parse_line();
+		void parse_line();
 		bool run_program();
 	};
 

@@ -111,7 +111,7 @@ bool program::build_program(std::string f){
 
 
 // Alot of overlap but it would complicate reading it even more if I tried to combine them (from file and from console) into one function that uses either cin or ifstream...or seperate parts of it into even more functions.
-std::vector<std::unique_ptr<token> > program::parse_line(){
+void program::parse_line(){
 	std::cout << "->";
 	char next_character;
 	bool not_escaped = true;
@@ -194,5 +194,4 @@ std::vector<std::unique_ptr<token> > program::parse_line(){
 			std::cout << *tok;
 		}std::cout << std::endl;
 	}
-	return tokens;
 }

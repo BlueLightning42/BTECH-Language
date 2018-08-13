@@ -4,8 +4,8 @@ using namespace BTECH;
 
 //boilerplate for printing tokens?
 std::ostream& operator<< (std::ostream& os, const token& tok) {
-    tok.print(os); //call print method of derived class
-    return os;
+	tok.print(os); //call print method of derived class
+	return os;
 }
 void _generic_token::print(std::ostream& os) const{
 	os <<'[' << this->name << "] ";
@@ -31,11 +31,7 @@ void _number::print(std::ostream& os) const{
 }
 void function::print(std::ostream& os) const{
 	os <<"  func\'" << this->name << ": \t{";
-	if (!this->body.empty()){
-		for(const auto &i: body){ //::const_iterator
-			os << *i << " \n";
-		}
-	}
+	os << this->body << " \n";
 	os << "\t}";
 }
 void scope::print(std::ostream& os) const{
@@ -66,7 +62,7 @@ void expression::print(std::ostream& os) const{
 
 
 //================= jen =====================//
-/*    jen printing/converting to strings     */
+/*	jen printing/converting to strings	 */
 
 
 std::string token::jen_print() const{return "";}
@@ -118,7 +114,7 @@ std::string function::jen_print() const{
 std::string scope::jen_print() const{
 	std::string temp;
 	 if (!this->body.empty()){
-		for(auto i: body){ //::const_iterator
+		for(const auto &i: body){ //::const_iterator
 			temp += i->jen_print();
 		}
 	}
@@ -126,7 +122,7 @@ std::string scope::jen_print() const{
 }
 std::string expression::jen_print() const{
 	std::string temp = "";
-	for(auto i: this->body){
+	for(const auto &i: this->body){
 		temp += i->jen_print() + " ";
 	}
 	return temp;
@@ -137,7 +133,7 @@ std::string expression::jen_print() const{
 
 
 //================= Zen =====================//
-/*    Zen printing uses 7 segment displays   */
+/*	Zen printing uses 7 segment displays   */
 
 /*	top	
 	top left	
@@ -165,13 +161,13 @@ const unsigned char screen[12] ={
 	0b00000001  // point
 };
 inline void append_number_to_7SD(std::vector<std::string> &s, unsigned char c){
-	s[0].insert(8,"  " +std::string((c >> 7 & 1)? ".____." : ".    .")										+ "  ");
-	s[1].insert(8,"  " +std::string((c >> 6 & 1)? "|" : " ") + "    " + std::string((c >> 5 & 1)? "|" : " ")	+ "  ");
-	s[2].insert(8,"  " +std::string((c >> 6 & 1)? "|" : " ") + "    " + std::string((c >> 5 & 1)? "|" : " ")	+ "  ");
-	s[3].insert(8,"  " +std::string((c >> 4 & 1)? ".____." : ".    .")										+ "  ");
-	s[4].insert(8,"  " +std::string((c >> 3 & 1)? "|" : " ") + "    " + std::string((c >> 2 & 1)? "|" : " ")	+ "  ");
-	s[5].insert(8,"  " +std::string((c >> 3 & 1)? "|" : " ") + "    " + std::string((c >> 2 & 1)? "|" : " ")	+ "  ");
-	s[6].insert(8,"  " +std::string((c >> 1 & 1)? ".____." : ".    .") + std::string((c >> 0 & 1)? "o" : " ") + " " );
+	s[0].insert(8,"  " +std::string((c >> 7 & 1)? ".____." : ".	.")										+ "  ");
+	s[1].insert(8,"  " +std::string((c >> 6 & 1)? "|" : " ") + "	" + std::string((c >> 5 & 1)? "|" : " ")	+ "  ");
+	s[2].insert(8,"  " +std::string((c >> 6 & 1)? "|" : " ") + "	" + std::string((c >> 5 & 1)? "|" : " ")	+ "  ");
+	s[3].insert(8,"  " +std::string((c >> 4 & 1)? ".____." : ".	.")										+ "  ");
+	s[4].insert(8,"  " +std::string((c >> 3 & 1)? "|" : " ") + "	" + std::string((c >> 2 & 1)? "|" : " ")	+ "  ");
+	s[5].insert(8,"  " +std::string((c >> 3 & 1)? "|" : " ") + "	" + std::string((c >> 2 & 1)? "|" : " ")	+ "  ");
+	s[6].insert(8,"  " +std::string((c >> 1 & 1)? ".____." : ".	.") + std::string((c >> 0 & 1)? "o" : " ") + " " );
 }
 inline int i_pow(int a, int b){
 	if (b==0) return 1;
@@ -182,7 +178,7 @@ inline int i_pow(int a, int b){
 	return a;
 }
 void print_7SD(int num){
-	std::vector<std::string> s = {"    \n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n||   ||_"};
+	std::vector<std::string> s = {"	\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n||   ||_"};
 	int tn=num;
 	do{
 		append_number_to_7SD(s, screen[tn % 10]);
@@ -199,7 +195,7 @@ void print_7SD(int num){
 	}else{std::cout << "\n===============||1|\n";}
 }
 void print_7SD(float num){
-	std::vector<std::string> s = {"    \n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n||   ||_"};
+	std::vector<std::string> s = {"	\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n|| ","  ||\n||   ||_"};
 	int tn=num;
 	int places = 0;
 	while(tn){

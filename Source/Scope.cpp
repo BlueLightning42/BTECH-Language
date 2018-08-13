@@ -1,19 +1,30 @@
 // file used to turn all the generic tokens into nested objects
-
 #include "BTECH.h"
 using namespace BTECH;
 
-bool scope::build_scope(std::vector<std::unique_ptr<token> > tok){
-	this->tokens = tok;
+inline void ptr_pop_convert(std::vector<std::unique_ptr<token> > &ptr_vec1,
+					std::vector<std::shared_ptr<token> > &ptr_vec2, 
+					int i){
+	ptr_vec2.push_back(std::move(ptr_vec1[i]));
+	ptr_vec1.erase(ptr_vec1.begin()+i,ptr_vec1.begin()+i+1);
+}
+inline std::shared_ptr<token> ptr_pop(std::vector<std::unique_ptr<token> > &ptr_vec1, int i){
+	std::shared_ptr<token> c = std::move(ptr_vec1[i]); //move a single token out of unique
+	ptr_vec1.erase(ptr_vec1.begin()+i,ptr_vec1.begin()+i+1); //errase spot where ptr used to be
+	return c;
+}
+
+bool scope::build_scope(std::vector<std::unique_ptr<token> >& tok){
+	std::move(tok.begin(), tok.end(), std::back_inserter(this->tokens));
 	while(_itter < tokens.size()-1){//keep adding stuff to main unstil we reach EOF
 		this->body.push_back( build_command() );
 	}
 	return 0;
 }
-bool scope::add_to_scope(std::vector<std::unique_ptr<token> > tok){
+bool scope::add_to_scope(std::vector<std::unique_ptr<token> >& tok){
 
 	//transfer ownership of unique pointers to the scope
-	tokens = std::move(tok);
+	std::move(tok.begin(), tok.end(), std::back_inserter(this->tokens));   
 
 	while(_itter < tokens.size()-1){//parse the newest line
 		this->body.push_back( build_command() );
@@ -26,11 +37,11 @@ std::shared_ptr<command> scope::build_function(){
 
 	get_token();//move past :
 
-	func->body.push_back(build_command());
+	func->body = build_command(); //bind the next command whatever it is to the function
 	return func;
 }
 std::shared_ptr<command> scope::build_scope(){
-	std::shared_ptr<command> scp = std::make_shared<scope>(get_token().name);
+	std::shared_ptr<scope> scp = std::make_shared<scope>(get_token().name);
 
 	get_token();//move past {
 
@@ -50,10 +61,9 @@ std::shared_ptr<command> scope::build_expression(){
 	while(!(tokens[_itter]->name_is("EOL") || tokens[_itter]->name_is("EOF") || op_is(')') )){
 		if (op_is('(')){
 			_itter++;
-			express->body.push_back(build_expression());//add all tokens into the array
+			express->body.push_back(build_expression()); //add all tokens into the array
 		}else{
-			
-			express->body.push_back(std::move(tokens[_itter]));//add all tokens into the array
+			ptr_pop_convert(tokens, express->body, _itter); //add all tokens into the array
 		}
 		_itter++;
 	}_itter++;
@@ -68,8 +78,8 @@ bool scope::op_is(char b){
 	return false;
 }
 std::shared_ptr<command> scope::build_command(){
-	if (tokens[_itter]->name_is("EOF")) 
-		return std::move(tokens[_itter]);
+	if (tokens[_itter]->name_is("EOF"))
+		return std::make_shared<command>("EOF");
 	if (tokens[_itter]->name_is("op")){
 		if(tokens[_itter]->type_is('(')){
 			_itter++;
@@ -90,16 +100,15 @@ std::shared_ptr<command> scope::build_command(){
 		}else{
 			return build_expression();	// nested function calls
 		}
-	}else{
-		return build_expression();
-	}
+	}//else
+	return build_expression();
 }
 std::shared_ptr<command> scope::build_multiline_command(){
 	std::shared_ptr<expression> cmds = std::make_shared<expression>("multcmd");
 	while(	!op_is(')') && !tokens[_itter]->name_is("EOF") ){	// peek
 		(cmds)->body.push_back(build_command());
 	}
-	//remove weurd EOL's that apear after multilines? TEST DOES THIS BREAK ANYTHING
+	//remove weird EOL's that apear after multilines? TEST DOES THIS BREAK ANYTHING
 	while ((tokens[_itter+1]->name_is("EOL") || tokens[_itter]->name_is("EOL")) && !op_is(')')) _itter++; 
 	return cmds;
 }
