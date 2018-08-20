@@ -20,7 +20,7 @@ scope::scope(std::string s, std::vector<std::shared_ptr<pointer> > p): command(s
 function::function(std::string s): command(s) {}
 expression::expression(): command("expression") {}
 expression::expression(std::string s): command(s) {}
-pointer::pointer(std::string s, std::shared_ptr<command> p): command(s), cts(p){}
+pointer::pointer(std::string s, std::shared_ptr<command> p): command(s), contents(p){}
 
 
 

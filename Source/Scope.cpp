@@ -29,7 +29,7 @@ bool scope::add_to_scope(std::vector<std::unique_ptr<token> >& tok){
 }
 //NOTE if I want to be safe and nice I should probably delete all the items in the vector later
 std::shared_ptr<command> scope::build_function(){
-	std::shared_ptr<function> func = std::make_shared<function>(get_token().name);
+	auto func = std::make_shared<function>(get_token().name);
 
 	get_token();//move past :
 
@@ -37,13 +37,13 @@ std::shared_ptr<command> scope::build_function(){
 	return func;
 }
 std::shared_ptr<command> scope::build_special_function(std::string specific_name){
-	std::shared_ptr<function> func = std::make_shared<function>(specific_name);
+	auto func = std::make_shared<function>(specific_name);
 
 	func->body = build_expression(); //bind the next command whatever it is to the function
 	return func;
 }
 std::shared_ptr<command> scope::build_scope(std::vector<std::shared_ptr<pointer> > ptrs){
-	std::shared_ptr<scope> scp = std::make_shared<scope>(get_token().name, ptrs);
+	auto scp = std::make_shared<scope>(get_token().name, ptrs);
 
 	get_token();//move past {
 
@@ -59,7 +59,7 @@ std::shared_ptr<command> scope::build_scope(std::vector<std::shared_ptr<pointer>
 
 std::shared_ptr<command> scope::build_expression(){
 
-	std::shared_ptr<expression> express = std::make_shared<expression>();
+	auto express = std::make_shared<expression>();
 
 	while(!(tokens[_itter]->name_is("EOL") || tokens[_itter]->name_is("EOF") || op_is(')') )){
 		if (op_is('(')){
@@ -100,7 +100,7 @@ std::shared_ptr<command> scope::build_command(){
 				return build_special_function("reassignment");
 			}else{
 				std::string tmpname = tokens[_itter]->name;
-				_itter++;
+				_itter += 2;
 				this->pointers.push_back(
 					std::make_shared<pointer>(	tmpname,
 												(build_command()) 	)
@@ -121,7 +121,7 @@ std::shared_ptr<command> scope::build_command(){
 	return build_expression();
 }
 std::shared_ptr<command> scope::build_multiline_command(){
-	std::shared_ptr<expression> cmds = std::make_shared<expression>("multcmd");
+	auto cmds = std::make_shared<expression>("multcmd");
 	while(	!op_is(')') && !tokens[_itter]->name_is("EOF") ){	// peek
 		(cmds)->body.push_back(build_command());
 	}
