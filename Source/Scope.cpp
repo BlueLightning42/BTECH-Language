@@ -2,12 +2,6 @@
 #include "BTECH.h"
 using namespace BTECH;
 
-inline void ptr_pop_convert(std::vector<std::unique_ptr<token> > &ptr_vec1,
-					std::vector<std::shared_ptr<token> > &ptr_vec2, 
-					int i){
-	ptr_vec2.push_back(std::move(ptr_vec1[i]));
-	ptr_vec1.erase(ptr_vec1.begin()+i,ptr_vec1.begin()+i+1);
-}
 inline std::shared_ptr<token> ptr_pop(std::vector<std::unique_ptr<token> > &ptr_vec1, int i){
 	std::shared_ptr<token> c = std::move(ptr_vec1[i]); //move a single token out of unique
 	ptr_vec1.erase(ptr_vec1.begin()+i,ptr_vec1.begin()+i+1); //errase spot where ptr used to be
@@ -15,7 +9,9 @@ inline std::shared_ptr<token> ptr_pop(std::vector<std::unique_ptr<token> > &ptr_
 }
 
 bool scope::build_scope(std::vector<std::unique_ptr<token> >& tok){
-	std::move(tok.begin(), tok.end(), std::back_inserter(this->tokens));
+	
+	tokens = std::move(tok);
+
 	while(_itter < tokens.size()-1){//keep adding stuff to main unstil we reach EOF
 		this->body.push_back( build_command() );
 	}
@@ -24,7 +20,7 @@ bool scope::build_scope(std::vector<std::unique_ptr<token> >& tok){
 bool scope::add_to_scope(std::vector<std::unique_ptr<token> >& tok){
 
 	//transfer ownership of unique pointers to the scope
-	std::move(tok.begin(), tok.end(), std::back_inserter(this->tokens));   
+	tokens = std::move(tok);  
 
 	while(_itter < tokens.size()-1){//parse the newest line
 		this->body.push_back( build_command() );
@@ -40,8 +36,14 @@ std::shared_ptr<command> scope::build_function(){
 	func->body = build_command(); //bind the next command whatever it is to the function
 	return func;
 }
-std::shared_ptr<command> scope::build_scope(){
-	std::shared_ptr<scope> scp = std::make_shared<scope>(get_token().name);
+std::shared_ptr<command> scope::build_special_function(std::string specific_name){
+	std::shared_ptr<function> func = std::make_shared<function>(specific_name);
+
+	func->body = build_expression(); //bind the next command whatever it is to the function
+	return func;
+}
+std::shared_ptr<command> scope::build_scope(std::vector<std::shared_ptr<pointer> > ptrs){
+	std::shared_ptr<scope> scp = std::make_shared<scope>(get_token().name, ptrs);
 
 	get_token();//move past {
 
@@ -56,6 +58,7 @@ std::shared_ptr<command> scope::build_scope(){
 }
 
 std::shared_ptr<command> scope::build_expression(){
+
 	std::shared_ptr<expression> express = std::make_shared<expression>();
 
 	while(!(tokens[_itter]->name_is("EOL") || tokens[_itter]->name_is("EOF") || op_is(')') )){
@@ -63,11 +66,11 @@ std::shared_ptr<command> scope::build_expression(){
 			_itter++;
 			express->body.push_back(build_expression()); //add all tokens into the array
 		}else{
-			ptr_pop_convert(tokens, express->body, _itter); //add all tokens into the array
+			express->body.push_back(std::move(tokens[_itter]));
+			tokens.erase(tokens.begin()+_itter,tokens.begin()+_itter+1);
 		}
-		_itter++;
 	}_itter++;
-	
+
 	return express;
 }
 bool scope::op_is(char b){
@@ -89,11 +92,25 @@ std::shared_ptr<command> scope::build_command(){
 		}
 	}else if (tokens[_itter+1]->name_is("op")){
 		if (tokens[_itter+1]->type_is('=')){
-			std::cout << "=";
-			_itter++;
+			bool already_defined = false;
+			for(const auto p: pointers){
+				if (p->name_is(tokens[_itter]->name)) already_defined = true;
+			}
+			if(already_defined){
+				return build_special_function("reassignment");
+			}else{
+				std::string tmpname = tokens[_itter]->name;
+				_itter++;
+				this->pointers.push_back(
+					std::make_shared<pointer>(	tmpname,
+												(build_command()) 	)
+					);
+				return build_command();
+				
+			}
 			//cmd =	assignment(get_token());
 		}else if (tokens[_itter+1]->type_is('{')){ //TODO
-			return build_scope();
+			return build_scope(this->pointers);
 		//cmd =	function_declariation(get_token());
 		}else if(tokens[_itter+1]->type_is(':')){
 			return build_function();	// nested function calls

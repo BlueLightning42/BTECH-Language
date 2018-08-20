@@ -7,9 +7,11 @@
 #include <set>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <complex>
 #include <memory>
 #include <algorithm>
+#include <map>
 /*
 
 This Whole project has led me to the understanding that Polymorphism is evil.
@@ -29,7 +31,7 @@ namespace BTECH{
 		}
 	}*/
 	template<typename T, typename... Args>
-	inline std::unique_ptr<T> make_unique(Args&&... args) {
+	std::unique_ptr<T> make_unique(Args&&... args) {
 		return (std::unique_ptr<T>(new T(std::forward<Args>(args)...)));
 	}
 	//token list will be a vector of pointers to an abstract token class
@@ -39,7 +41,7 @@ namespace BTECH{
 		token(std::string s): name(s) {}
 		token(): name("_") {}
 		virtual void print(std::ostream&) const;
-		virtual std::string jen_print() const;
+		virtual void jen_print(std::stringstream&) const;
 		bool name_is(std::string) const;
 		virtual bool type_is(char) const;
 		~token(); //removes a load of errors for not having a default deconstructor and for some reason they can't be in the header file
@@ -49,7 +51,7 @@ namespace BTECH{
 	  public:
 		_generic_token(std::string);
 		void print(std::ostream&) const;
-		std::string jen_print() const;
+		void jen_print(std::stringstream&) const;
 		~_generic_token(); 
 	};
 
@@ -58,7 +60,7 @@ namespace BTECH{
 	  public:
 		_operator(char);
 		void print(std::ostream&) const;
-		std::string jen_print() const;
+		void jen_print(std::stringstream&) const;
 		bool type_is(char) const;
 		~_operator();
 		
@@ -71,7 +73,9 @@ namespace BTECH{
 		std::string contents;
 		_string(std::string);
 		void print(std::ostream&) const;
-		std::string jen_print() const;
+		void jen_print(std::stringstream&) const;
+		void out_print() const;
+		void add_text(std::string);
 		~_string(); 
 	};
 	
@@ -98,7 +102,7 @@ namespace BTECH{
 		std::complex<double> get_value_i() const;
 
 
-		virtual std::string jen_print() const;
+		virtual void jen_print(std::stringstream&) const;
 		void print(std::ostream&) const;
 
 		~_number(); 
@@ -111,9 +115,17 @@ namespace BTECH{
 	  public:
 		command(std::string);
 		virtual void print(std::ostream&) const;
-		virtual std::string jen_print() const;
-		virtual void run(std::shared_ptr<token>);
+		virtual void jen_print(std::stringstream&) const;
+		virtual void run(std::shared_ptr<token>, int);
 		~command();
+	};
+	class pointer: public command{
+	  public:
+		std::shared_ptr<command> cts;
+		pointer(std::string, std::shared_ptr<command>);
+		void print(std::ostream&) const;
+		void jen_print(std::stringstream&) const;
+		void run(std::shared_ptr<token>, int);
 	};
 	class function: public command{
 	  public:
@@ -121,8 +133,8 @@ namespace BTECH{
 		function(std::string, std::vector<std::shared_ptr<command> >);
 		std::shared_ptr<command> body;
 		void print(std::ostream&) const;
-		std::string jen_print() const;
-		void run(std::shared_ptr<token>);
+		void jen_print(std::stringstream&) const;
+		void run(std::shared_ptr<token>, int);
 		~function(); 
 	};
 	class expression: public command{
@@ -130,18 +142,22 @@ namespace BTECH{
 		expression();
 		expression(std::string);
 		std::vector<std::shared_ptr<token> > body;
+		void run(std::shared_ptr<token>, int);
 		void print(std::ostream&) const;
-		std::string jen_print() const;
-		~expression(); 
+		void out_print() const;
+		void jen_print(std::stringstream&) const;
+		~expression();
 	};
 	class scope: public command{
 	  public:
 		scope(std::string);
-		std::vector<std::unique_ptr<token> > tokens;
+		scope(std::string, std::vector<std::shared_ptr<BTECH::pointer> >);
+		std::vector<std::unique_ptr<token  > > tokens;
 		std::vector<std::shared_ptr<command> > body;
+		std::vector<std::shared_ptr<pointer> > pointers; // custom pointers
 		void print(std::ostream&) const;
-		std::string jen_print() const;
-		void run(std::shared_ptr<token>);
+		void jen_print(std::stringstream&) const;
+		void run(std::shared_ptr<token>, int);
 		/*  ~  ~  ~  ~  ~  ~  ~  */
 		int _itter; //used to be a std::vector<token>::itterator...
 		token get_token(){ //basically pop front...
@@ -149,8 +165,9 @@ namespace BTECH{
 			return *tokens.at(_itter -1);
 		}
 		std::shared_ptr<command> build_function();
+		std::shared_ptr<command> build_special_function(std::string);
 		std::shared_ptr<command> build_command();
-		std::shared_ptr<command> build_scope();
+		std::shared_ptr<command> build_scope(std::vector<std::shared_ptr<BTECH::pointer> >);
 		std::shared_ptr<command> build_expression();
 		std::shared_ptr<command> build_multiline_command();
 		bool add_to_scope(std::vector<std::unique_ptr<token> >&);

@@ -31,11 +31,18 @@ void _number::print(std::ostream& os) const{
 }
 void function::print(std::ostream& os) const{
 	os <<"  func\'" << this->name << ": \t{";
-	os << this->body << " \n";
+	os << *this->body << " \n";
 	os << "\t}";
 }
 void scope::print(std::ostream& os) const{
 	os <<"  scope'" << this->name << "{ \n";
+	
+	if (!this->pointers.empty()){
+		os <<"local variables:\n";
+		for(const auto &p: pointers){ //::const_iterator
+			os << "\t" << *p << " \n";
+		}
+	}
 	if (!this->body.empty()){
 		for(const auto &i: body){ //::const_iterator
 			os << *i << " \n";
@@ -59,22 +66,31 @@ void expression::print(std::ostream& os) const{
 		os << "] ";
 	}
 }
-
-
+void _string::out_print() const{ std::cout << this->contents;}
+void expression::out_print() const{
+	if (!this->body.empty()){
+		for(const auto &i: body){ //::const_iterator
+			std::dynamic_pointer_cast<_string>(i)->out_print();
+		}
+	}
+}
+void pointer::print(std::ostream& os) const{
+	os << this->name << "->(" << *cts << ")";
+}
 //================= jen =====================//
 /*	jen printing/converting to strings	 */
 
-
-std::string token::jen_print() const{return "";}
-std::string command::jen_print() const{return "";}
-std::string _generic_token::jen_print() const{
-	return this->name;
+void pointer::jen_print(std::stringstream& ss) const{cts->jen_print(ss);}
+void token::jen_print(std::stringstream& ss) const{}
+void command::jen_print(std::stringstream& ss) const{}
+void _generic_token::jen_print(std::stringstream& ss) const{
+	ss <<this->name;
 }
-std::string _operator::jen_print() const{
-	return std::string(1, this->_type);
+void _operator::jen_print(std::stringstream& ss) const{
+	ss <<this->_type;
 }
-std::string _string::jen_print() const{
-	return this->contents;
+void _string::jen_print(std::stringstream& ss) const{
+	ss << this->contents;
 }
 
 inline std::string clip_zero(std::string str){
@@ -85,47 +101,44 @@ inline std::string clip_zero(std::string str){
 inline bool close_to_int(double f){
 	return !( f > -0.0000002 && f < 0.0000002);
 }
-std::string _number::jen_print() const{
+void _number::jen_print(std::stringstream& ss) const{
 	if(this->imaginary){
-		return (close_to_int(c_val.real()) ? 
+		ss << (close_to_int(c_val.real()) ? 
 					clip_zero(std::to_string(this->c_val.real())) + " " 
-					: "") +
+					: "") <<
 				(c_val.imag() > 0 ? 
 					close_to_int(c_val.real()) ? "+ " : "" 
-					: "- ") + 
-				clip_zero(std::to_string(std::abs(this->c_val.imag()))) + "j";
+					: "- ") <<
+				clip_zero(std::to_string(std::abs(this->c_val.imag()))) << "j";
 	}else{
 		if (this->floating_point){
-			return clip_zero(std::to_string(this->f_val));
+			ss << clip_zero(std::to_string(this->f_val));
 		}else{
-			return std::to_string(this->i_val);
+			ss << this->i_val;
 		}
 	}
 }
-std::string function::jen_print() const{
+void function::jen_print(std::stringstream& ss) const{
 	if(this->name_is("nasim") || this->name_is("yotka")){
-		return "jen: "+this->name +" A wonderfull collegue\n";
+		ss << "jen: " <<this->name <<" A wonderfull collegue\n";
 	}else if (this->name_is("jen")){
-		return "jen: That is my name yes\n";
+		ss << "jen: That is my name yes\n";
 	}else{
-		return this->name + ' ';
-	}	
+		ss << this->name <<' ';
+	}
 }
-std::string scope::jen_print() const{
-	std::string temp;
+void scope::jen_print(std::stringstream& ss) const{
 	 if (!this->body.empty()){
 		for(const auto &i: body){ //::const_iterator
-			temp += i->jen_print();
+			i->jen_print(ss);
 		}
 	}
-	return temp;
 }
-std::string expression::jen_print() const{
-	std::string temp = "";
+void expression::jen_print(std::stringstream& ss) const{
 	for(const auto &i: this->body){
-		temp += i->jen_print() + " ";
+		i->jen_print(ss);
+		ss << " ";
 	}
-	return temp;
 }
 
 

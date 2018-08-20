@@ -16,15 +16,20 @@ command::command(std::string s): token(s) {}
 
 
 scope::scope(std::string s): command(s), _itter(0) {}
+scope::scope(std::string s, std::vector<std::shared_ptr<pointer> > p): command(s), _itter(0), pointers(p) {}
 function::function(std::string s): command(s) {}
 expression::expression(): command("expression") {}
 expression::expression(std::string s): command(s) {}
+pointer::pointer(std::string s, std::shared_ptr<command> p): command(s), cts(p){}
+
+
 
 bool token::name_is(std::string s) const{return !s.compare(this->name);}
 bool token::type_is(char c) const{return 0;}
 bool _operator::type_is(char c) const{return (c == this->_type);}
-
-
+void _string::add_text(std::string s){
+	this->contents.append(s);
+}
 
 // unique pointers require full implementation
 // declaring all the deconstructors fix (some of the) initialixation errors
@@ -94,13 +99,9 @@ _number::_number(std::string n, bool i): token("num"), imaginary(i) {
 }
 
 
-
-program::program(std::string s, int d=1): 
-											debug(d), 
-											_itter(0), 
-											program_name(s), 
-											_main("main")
-											{
+// looks like hot garbage :/
+program::program(std::string s, int d=1): debug(d),_itter(0),program_name(s),_main("main"){
+	//					Parse Input					   //
 	if(build_program(s)){
 		std::cout << "\nTokenizing unsucessfull";
 		return;
@@ -111,11 +112,11 @@ program::program(std::string s, int d=1):
 	}
 	if(debug > 1){
 std::cout << ".\n->===================== Tokens generated: ====================\n  ";
-		for(const auto &i: tokens){
-			std::cout << *i << "  "; 
+		for(const auto &i: this->tokens){
+			std::cout << *i << "  ";
 		}
 	}std::cout << '.';
-	/*  ::~  ::~  ::~  ::~  ::~  ::~  ::~  */
+	//					Create objects					 //
 	if(_main.build_scope(this->tokens)){
 		std::cout << "\nObject creator unsucessfull";
 		return;
@@ -127,7 +128,7 @@ std::cout << ".\n->===================== Tokens generated: ====================\
 std::cout << ".\n->====================== Objects created: ====================\n";
 		std::cout << _main;
 	}std::cout << '.';
-	/*  ::~  ::~  ::~  ::~  ::~  ::~  ::~  */
+	//					Run/Build script					   //
 	if(debug > 1) std::cout << "\n\n" << std::string(62, '=');
 	if(debug) std::cout << "\nRun Program:";
 	else std::cout<<'.';
@@ -135,20 +136,16 @@ std::cout << ".\n->====================== Objects created: ====================\
 			 << ' ' << this->program_name << ' '  
 			 << std::string(30-program_name.size()/2 - program_name.size()%2, '=') << std::endl;
 	if(run_program()){
-		std::cout << "\nError While Running";
+		std::cout << "\nError While Running" << std::endl;
 		return;
 	}
 	std::cout << std::endl << std::string(62, '=');
 	if(debug > 1) std::cout << "\n\n\n";
+	//					End running file					   //
 }
 
 //					SHELL					   //
-program::program():
-											debug(0), 
-											_itter(0), 
-											program_name("shell"), 
-											_main("shell")
-											{
+program::program(): debug(0),_itter(0), program_name("shell"), _main("shell"){
 	std::cout << "===============================================================\n" << 
 	"Welcome to the shell	\ntype #help for information or enter a line you wish to run" << "\n->========================== SHELL ============================\n";
 	// READ EVAL PRINT LOOP
