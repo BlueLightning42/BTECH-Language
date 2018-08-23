@@ -43,7 +43,13 @@ std::shared_ptr<command> scope::build_special_function(std::string specific_name
 	return func;
 }
 std::shared_ptr<command> scope::build_scope(std::vector<std::shared_ptr<pointer> > ptrs){
-	auto scp = std::make_shared<scope>(get_token().name, ptrs);
+	std::shared_ptr<scope> scp;
+	if(!tokens[_itter]->name_is("EOL") && !tokens[_itter]->name_is("op")){
+		scp = std::make_shared<scope>(get_token().name, ptrs);
+	}else{
+		if (tokens.back()->name != "EOL") get_token();
+		scp = std::make_shared<scope>(std::string("non'defined"), ptrs);
+	}
 
 	get_token();//move past {
 
@@ -52,11 +58,9 @@ std::shared_ptr<command> scope::build_scope(std::vector<std::shared_ptr<pointer>
 	}
 	get_token();//move past }
 
-	if(tokens.back()->name != "EOL")
-		get_token();//move past }
+	if(tokens.back()->name != "EOL") get_token();//move past }
 	return scp;
 }
-
 std::shared_ptr<command> scope::build_expression(){
 
 	auto express = std::make_shared<expression>();
@@ -87,8 +91,10 @@ std::shared_ptr<command> scope::build_command(){
 		if(tokens[_itter]->type_is('(')){
 			_itter++;
 			return build_multiline_command();	// multiline commands
-		}else{
-			return build_expression();
+		}else if (tokens[_itter]->type_is('{')){
+			return build_scope(this->pointers);
+		}else if (tokens[_itter]->type_is('=')){ //TODO
+			return build_special_function("scope_return");
 		}
 	}else if (tokens[_itter+1]->name_is("op")){
 		if (tokens[_itter+1]->type_is('=')){
@@ -109,13 +115,11 @@ std::shared_ptr<command> scope::build_command(){
 				
 			}
 			//cmd =	assignment(get_token());
-		}else if (tokens[_itter+1]->type_is('{')){ //TODO
+		}else if (tokens[_itter+1]->type_is('{')){ //named scope
 			return build_scope(this->pointers);
 		//cmd =	function_declariation(get_token());
 		}else if(tokens[_itter+1]->type_is(':')){
 			return build_function();	// nested function calls
-		}else{
-			return build_expression();	// nested function calls
 		}
 	}//else
 	return build_expression();
