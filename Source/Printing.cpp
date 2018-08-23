@@ -48,7 +48,7 @@ void scope::print(std::ostream& os) const{
 			os << *i << " \n";
 		}
 	}
-	os << "\t}";
+	os << "\n}'out_of_" << this->name << "\n";
 }
 void expression::print(std::ostream& os) const{
 	if (this->name_is("multcmd")){
@@ -141,9 +141,19 @@ void scope::jen_print(std::stringstream& ss,scope& current_scope) const{
 	}
 }
 void expression::jen_print(std::stringstream& ss,scope& current_scope) const{
-	for(const auto &i: this->body){
-		i->jen_print(ss, current_scope);
-		ss << " ";
+	if (!this->body.empty()){
+		bool first = true;
+		for(const auto &i: this->body){
+			if (first){
+				first = false;
+			}else{
+				ss << " ";
+			}
+			if (i->name_is("nl")){
+				first = true; // remove space after new lines
+			}
+			i->jen_print(ss, current_scope);
+		}
 	}
 }
 
