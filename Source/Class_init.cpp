@@ -4,8 +4,8 @@ using namespace BTECH;
 
 
 
-void token::print(std::ostream& os) const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
-void command::print(std::ostream& os) const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
+void token::print(std::ostream& os) 	const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
+void command::print(std::ostream& os) 	const{std::cout <<"ERROR: IMPOSIBLE TO REACH THIS";} // should never reach
 
 //default Unknown
 _generic_token::_generic_token(std::string n): token(n) {}
@@ -15,18 +15,42 @@ _operator::_operator(char t): token("op"), _type(t) {}
 command::command(std::string s): token(s) {}
 
 
-scope::scope(std::string s): command(s), _itter(0) {}
+scope::scope(std::string s): command(s), _itter(0) {
+	//first time initialize with some (overwritable) variables
+	std::shared_ptr<token> BTECH_PI(new _number(std::acos(-1)));
+	std::shared_ptr<token> BTECH_E(	new _number(std::exp(1.0)));
+	std::shared_ptr<token> BTECH_NL(new _string("\n"));
+
+	this->pointers = {
+		BTECH::make_unique<pointer>(
+				std::string("pi"), 
+				std::make_shared<expression>(BTECH_PI, std::string("BTECH_PI"))),
+		BTECH::make_unique<pointer>(
+				std::string("e"),  
+				std::make_shared<expression>(BTECH_E,  std::string("BTECH_E")) ),
+		BTECH::make_unique<pointer>(
+				std::string("nl"), 
+				std::make_shared<expression>(BTECH_NL, std::string("BTECH_PI")))
+	};
+}
 scope::scope(std::string s, std::vector<std::shared_ptr<pointer> > p): command(s), _itter(0), pointers(p) {}
 function::function(std::string s): command(s) {}
 expression::expression(): command("expression") {}
 expression::expression(std::string s): command(s) {}
+expression::expression(std::shared_ptr<token> t, std::string s): command(s) {
+	body.push_back(t);
+}
 pointer::pointer(std::string s, std::shared_ptr<command> p): command(s), contents(p){}
 
 
 
 bool token::name_is(std::string s) const{return !s.compare(this->name);}
-bool token::type_is(char c) const{return 0;}
-bool _operator::type_is(char c) const{return (c == this->_type);}
+bool pointer::contents_name_is(std::string s) const{return (this->contents)->name_is(s);} //frw
+
+bool pointer::	type_is(char c) const{std::cout<< "CHECKD\n";return (c == 'p');} 		  // check if pointer
+bool _operator::type_is(char c) const{return (c == this->_type);} // figure out what operator it is
+bool token::	type_is(char _) const{return 0;} 				  // can't check anything else
+
 void _string::add_text(std::string s){
 	this->contents.append(s);
 }
@@ -99,7 +123,7 @@ _number::_number(std::string n, bool i): token("num"), imaginary(i) {
 }
 
 
-// looks like hot garbage :/
+// looks like hot garbage :/   slightly better after I inlined some if statements but still gross
 program::program(std::string s, int d=1): debug(d),_itter(0),program_name(s),_main("main"){
 	//					Parse Input					   //
 	if(build_program(s)){
@@ -116,6 +140,7 @@ std::cout << ".\n->===================== Tokens generated: ====================\
 			std::cout << *i << "  ";
 		}
 	}std::cout << '.';
+
 	//					Create objects					 //
 	if(_main.build_scope(this->tokens)){
 		std::cout << "\nObject creator unsucessfull";
@@ -128,6 +153,7 @@ std::cout << ".\n->===================== Tokens generated: ====================\
 std::cout << ".\n->====================== Objects created: ====================\n";
 		std::cout << _main;
 	}std::cout << '.';
+
 	//					Run/Build script					   //
 	if(debug > 1) std::cout << "\n\n" << std::string(62, '=');
 	if(debug) std::cout << "\nRun Program:";
