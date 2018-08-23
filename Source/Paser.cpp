@@ -1,9 +1,6 @@
 #include "BTECH.h"
 using namespace BTECH;
 
-// c++14 feature added to c++11 in a hack :3
-
-
 std::set <char> ops = {'+','-','/','*','%','&','(',')','>','<','^','|','=','!',':','{','}'};
 //token initializers
 
@@ -16,9 +13,9 @@ bool program::build_program(std::string f){
 	// parse input into token array
 	std::ifstream file;
 	try{
-		std::cout << "attempting to open file"<<std::endl;
+		if (debug > 1) std::cout << "attempting to open file"<<std::endl;
 		file.open(f.c_str());
-		std::cout << "file opend sucessfully"<<std::endl;
+		if (debug > 1) std::cout << "file opend sucessfully"<<std::endl;
 	}catch(std::exception e){
 		std::cout << "Error opening file"<<std::endl;
 		return 1;
@@ -104,8 +101,8 @@ bool program::build_program(std::string f){
 	}
 	if (tokens.back()->name_is("EOL"))
 		tokens.pop_back();
-	tokens.push_back(BTECH::make_unique<_generic_token>("EOF"));
 
+	tokens.push_back(BTECH::make_unique<_generic_token>("EOF"));
 	return 0;
 };
 
