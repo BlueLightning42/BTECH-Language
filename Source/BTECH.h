@@ -46,14 +46,17 @@ namespace BTECH{
 		virtual void jen_print(std::stringstream&,	scope&) const;
 		bool name_is(std::string) const;
 		virtual bool type_is(char) const;
+		virtual void evaluate_numeric(scope&);
+		virtual void evaluate_binary(scope&);
+		virtual void evaluate_logical(scope&);
 		~token(); //removes a load of errors for not having a default deconstructor and for some reason they can't be in the header file
 	};
 
 	class _generic_token: public token{
 	  public:
 		_generic_token(std::string);
-		void print(std::ostream&) const;
-		void jen_print(std::stringstream&,	scope&) const;
+		void print(std::ostream&) const override;
+		void jen_print(std::stringstream&,	scope&) const override;
 		~_generic_token(); 
 	};
 
@@ -61,9 +64,9 @@ namespace BTECH{
 		char _type; //type of operator
 	  public:
 		_operator(char);
-		void print(std::ostream&) const;
-		void jen_print(std::stringstream&,	scope&) const;
-		bool type_is(char) const;
+		void print(std::ostream&) const override;
+		void jen_print(std::stringstream&,	scope&) const override;
+		bool type_is(char) const override;
 		~_operator();
 		
 	};
@@ -74,8 +77,8 @@ namespace BTECH{
 	  public:
 		std::string contents;
 		_string(std::string);
-		void print(std::ostream&) const;
-		void jen_print(std::stringstream&,	scope&) const;
+		void print(std::ostream&) const override;
+		void jen_print(std::stringstream&,	scope&) const override;
 		void out_print() const;
 		void add_text(std::string);
 		~_string(); 
@@ -104,8 +107,8 @@ namespace BTECH{
 		std::complex<double> get_value_i() const;
 
 
-		virtual void jen_print(std::stringstream&,	scope&) const;
-		void print(std::ostream&) const;
+		virtual void jen_print(std::stringstream&,	scope&) const override;
+		void print(std::ostream&) const override;
 
 		~_number(); 
 	};
@@ -113,11 +116,12 @@ namespace BTECH{
 
 	// and the token class is basicaly just object
 	// functions are the most important part of this language even though its not functional
+	// anything that inherits from command can be run (even if "run" is just a NOP)
 	class command: public token{
 	  public:
 		command(std::string);
 		virtual void print(std::ostream&) const;
-		virtual void jen_print(std::stringstream&,	scope&) const;
+		virtual void jen_print(std::stringstream&,	scope&) const override;
 		virtual void run(std::shared_ptr<token>&,	scope&, int);
 		~command();
 	};
@@ -125,9 +129,11 @@ namespace BTECH{
 	  public:
 		std::shared_ptr<command> contents;
 		pointer(std::string, std::shared_ptr<command>);
-		void print(std::ostream&) const;
-		void jen_print(std::stringstream&,	scope&) const;
-		void run(std::shared_ptr<token>&,	scope&, int);
+		bool contents_name_is(std::string) const;
+		bool type_is(char) const override;
+		void print(std::ostream&) const override;
+		void jen_print(std::stringstream&,	scope&) const override;
+		void run(std::shared_ptr<token>&,	scope&, int)  override;
 	};
 	class function: public command{
 	  public:
@@ -135,19 +141,25 @@ namespace BTECH{
 		function(std::string, std::vector<std::shared_ptr<command> >);
 		std::shared_ptr<command> body;
 		void print(std::ostream&) const;
-		void jen_print(std::stringstream&,	scope&) const;
-		void run(std::shared_ptr<token>&,	scope&, int);
+		void jen_print(std::stringstream&,	scope&) const override;
+		void run(std::shared_ptr<token>&,	scope&, int)  override;
 		~function(); 
 	};
 	class expression: public command{
 	  public:
 		expression();
 		expression(std::string);
+		expression(std::shared_ptr<token>, std::string);
 		std::vector<std::shared_ptr<token> > body;
-		void run(std::shared_ptr<token>&,scope&, int);
-		void print(std::ostream&) const;
+		void print(std::ostream&) const override;
 		void out_print() const;
-		void jen_print(std::stringstream&,	scope&) const;
+		void jen_print(std::stringstream&,	scope&) const override;
+		void run(std::shared_ptr<token>&,	scope&, int)  override;
+
+		//override to actually implement
+		void evaluate_numeric(scope&) override;
+		void evaluate_binary(scope&) override;
+		void evaluate_logical(scope&) override;
 		~expression	();
 	};
 	class scope: public command{
@@ -157,9 +169,9 @@ namespace BTECH{
 		std::vector<std::unique_ptr<token  > > tokens;
 		std::vector<std::shared_ptr<command> > body;
 		std::vector<std::shared_ptr<pointer> > pointers; // custom pointers
-		void print(std::ostream&) const;
-		void jen_print(std::stringstream&,	scope&) const;
-		void run(std::shared_ptr<token>&,	scope&, int);
+		void print(std::ostream&) const override;
+		void jen_print(std::stringstream&,	scope&) const override;
+		void run(std::shared_ptr<token>&,	scope&, int)  override;
 		/*  ~  ~  ~  ~  ~  ~  ~  */
 		int _itter; //used to be a std::vector<token>::itterator...
 		token get_token(){ //basically pop front...
