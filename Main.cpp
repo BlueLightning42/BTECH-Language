@@ -2,6 +2,7 @@
 /*
 If anyone ever reads this I advise not looking in Source Folder
 any code located in there runs on black magic and hot glue (a mess of design choices and abuse of pointers)
+this was written as a way for me to learn the stl and after reaching a certain point bad practices started to creep in as I tried to implement stuff.
 */
 int main(int argc, char *argv[]) {
 	std::string f, line, tmp;
@@ -12,7 +13,7 @@ int main(int argc, char *argv[]) {
 		f = std::string(argv[1]);  // TODO more compiler flags later
 		for(int i=1; i<argc; i++){
 			if (argv[i][0] == '-'){
-				if (argv[i][1] = 'd'){
+				if (argv[i][1] == 'd'){
 					try {
 						d = std::stoi(std::string(std::string(argv[i], 2)));
 					}catch(std::exception e){
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
 				buff >> f;
 				while(buff >> tmp){
 					if (tmp[0] == '-'){
-						if (tmp[1] = 'd'){
+						if (tmp[1] == 'd'){
 							try {
 								d = std::stoi(tmp.substr(2));
 							}catch(std::exception e){
